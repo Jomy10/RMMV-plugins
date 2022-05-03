@@ -8,7 +8,7 @@ Copy the `.js` files to `your-project-folder/js/plugins/`. Then, go to the `plug
 ## Plugin list
 
 ### [Input manager](JOMY_inputManager.js)
-This is a **core** plugin. This means that it supposed to supposed to support other plugins. This plugin is used by the [keyboard](#keyboard) plugin.
+This is a **core** plugin. This means that it supposed to support other plugins. This plugin is used by the [keyboard](#keyboard) plugin.
 
 <details>
   <summary>Details</summary>
@@ -45,10 +45,10 @@ This plugin requires the [Input manager](#input-manager) plugin.
   <summary>Details</summary>
 
   #### Available *plugin* commands
-  - `mapUp`:
-  - `mapDown`:
-  - `mapLeft`:
-  - `mapRight`:
+  - `mapUp`
+  - `mapDown`
+  - `mapLeft`
+  - `mapRight`
 
   **usage**
   `COMMAND <type> [keyCode|keyName]`
@@ -103,3 +103,15 @@ Make an event follow a player by giving it a note of `<player-follower>`
 
 ### [Event Detection](JOMY_eventDetection.js)
 Detect events in front of the player.
+
+## License
+
+All plugins are licensed under the [Apache License 2.0](LICENSE).
+
+In short, 2 things are expected of your:
+- That you include the [license text](LICENSE) into the finished product that uses the plugins, giving proper credit.
+- That, if you change any of the plugins internal code, that you state what changes you made.
+
+Apart from these two conditions, you can do anything you want. The plugins can be used in both commercial and non-commercial games.
+
+More information about the license can be found [here](https://choosealicense.com/licenses/apache-2.0/).
