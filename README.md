@@ -39,8 +39,10 @@ This is a **core** plugin. This means that it supposed to supposed to support ot
 This plugin allows you to map a key to a control. For example, you can set the 'n'
 key to move the player up.
 
+This plugin requires the [Input manager](#input-manager) plugin.
+
 <details>
-  <summary>Details</details>
+  <summary>Details</summary>
 
   #### Available *plugin* commands
   - `mapUp`:
