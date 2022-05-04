@@ -19,6 +19,11 @@
 * @text 'Set the move up key'
 * @desc
 *
+* @command map
+* @text 'Map a key to a specific keycode'
+* @desc usage: map up 85
+*       this will set the key for moving up to keycode 85 (move up)
+*
 * @command reset
 * @text 'Reset a key to its default value'
 * @desc usage: reset n 23 or reset s 'r'
@@ -33,6 +38,8 @@
 * mapUp s r
 * or
 * mapUp r
+* or
+* map up 82
 *
 * - This will map the 'j' key to move the player down
 * mapDown n 74
@@ -73,15 +80,15 @@ var Jomy = Jomy || {};
 Jomy.Keyboard = class {
   // enum: keys representing what they should do
   static event = class {
-    static up = "up";
-    static down = "down";
-    static left = "left";
-    static right = "right";
-    static esc = "escape";
-    static ok = "ok";
-    static debug = "debug";
+    static up     = "up";
+    static down   = "down";
+    static left   = "left";
+    static right  = "right";
+    static esc    = "escape";
+    static ok     = "ok";
+    static debug  = "debug";
     static sprint = "shift";
-    static dash = "shift";
+    static dash   = "shift";
   };
 
   static resetKeys() {
@@ -96,18 +103,19 @@ Jomy.Keyboard = class {
     Input.keyMapper[newKeyCode] = key;
   }
 
+  /** Completely removes a key from the keymap */
   static removeKeyMapForKey(keyCode) {
     Input.keyMapper[keyCode] = null;
   }
 
-  /** Reset a specific keycode to its default
-  */
+  /** Reset a specific keycode to its default */
   static resetDefault(keyCode) {
     Jomy.InputManager.keyMap.
     Input.keyMapper[keyCode] = findInMapByValue(map, value);
   }
 };
 
+/** Find a value in a map and return its key */
 function findInMapByValue(map, value) {
     for (let [key, val] of map.entries()) {
       if (val === value) {
@@ -158,6 +166,9 @@ function findInMapByValue(map, value) {
       case 'mapRight':
         mapKeyFromArg(args[0], args[1], Jomy.Keyboard.event.right);
         break;
+      case 'map':
+        Jomy.Keyboard.map(args[0], args[1]);
+        break;
       case 'reset':
         if (args[0] == 'n') {
           Jomy.Keyboard.resetDefault(args[1]);
@@ -168,6 +179,7 @@ function findInMapByValue(map, value) {
             Jomy.Keyboard.resetDefault(Jomy.InputManager.keyMap.get(String(args[0])));
           }
         }
+        break;
     }
   }
 })();

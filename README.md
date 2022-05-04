@@ -44,6 +44,8 @@ This plugin requires the [Input manager](#input-manager) plugin to be installed 
 <details>
   <summary>Details</summary>
 
+  *Find all keycodes at [keycode.info](https://keycode.info)*
+
   #### Available *plugin* commands
   - `mapUp`
   - `mapDown`
@@ -52,6 +54,9 @@ This plugin requires the [Input manager](#input-manager) plugin to be installed 
 
   **usage**
   `COMMAND <type> [keyCode|keyName]`
+
+  - `map [key] [keycode]`
+  - `reset <type> [keyCode|keyName]`
 
   #### Examples
 
@@ -62,6 +67,7 @@ This plugin requires the [Input manager](#input-manager) plugin to be installed 
   mapUp s r
   mapUp 'r'
   mapUp r
+  map up 82
   ```
 
   *Using the key's code instead of the name*
@@ -69,11 +75,20 @@ This plugin requires the [Input manager](#input-manager) plugin to be installed 
   // this will map 'j' to move the player u
   mapUp n 74
   ```
+  The `map` command always uses the keycode
+
+  ##### Reseting keys
+  ```
+  reset s 'r'
+  reset 'r'
+  reset n 23
+  ```
 
   #### Available *script* functions
   - `Jomy.Keyboard.map(eventKeyCode, mapKeyCode)`
-  - `Jomy.Keyboard.removeKeyMapForKey(keycode)`
+  - `Jomy.Keyboard.removeKeyMapForKey(keyCode)`
   - `Jomy.Keyboard.resetKeys()`
+  - `Jomy.Keyboard.resetDefault(keyCode)`
 
   #### Examples
 
