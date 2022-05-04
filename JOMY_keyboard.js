@@ -19,6 +19,10 @@
 * @text 'Set the move up key'
 * @desc
 *
+* @command reset
+* @text 'Reset a key to its default value'
+* @desc usage: reset n 23 or reset s 'r'
+*
 * @help
 * == Usage ==
 * === Mapping keys ===
@@ -48,9 +52,13 @@
 * ```
 *
 * === Reset keys ===
+* Using script call to reset all keys:
 * ```
 * Jomy.Keyboard.resetKeys();
 * ```
+*
+* Using plugin command to reset a specific key:
+* reset n 20
 */
 
 //===================================================================
@@ -91,7 +99,22 @@ Jomy.Keyboard = class {
   static removeKeyMapForKey(keyCode) {
     Input.keyMapper[keyCode] = null;
   }
+
+  /** Reset a specific keycode to its default
+  */
+  static resetDefault(keyCode) {
+    Jomy.InputManager.keyMap.
+    Input.keyMapper[keyCode] = findInMapByValue(map, value);
+  }
 };
+
+function findInMapByValue(map, value) {
+    for (let [key, val] of map.entries()) {
+      if (val === value) {
+        return key;
+      }
+    }
+}
 
 (function() {
   // setup
@@ -130,11 +153,21 @@ Jomy.Keyboard = class {
         mapKeyFromArg(args[0], args[1], Jomy.Keyboard.event.down);
         break;
       case 'mapLeft':
-        mapKeyFromArg(args[0], args[1], Jomy.Keyboard.event.leftt);
+        mapKeyFromArg(args[0], args[1], Jomy.Keyboard.event.left);
         break;
       case 'mapRight':
         mapKeyFromArg(args[0], args[1], Jomy.Keyboard.event.right);
         break;
+      case 'reset':
+        if (args[0] == 'n') {
+          Jomy.Keyboard.resetDefault(args[1]);
+        } else {
+          if (args[1] == 's') {
+            Jomy.Keyboard.resetDefault(Jomy.InputManager.keyMap.get(String(args[1])));
+          } else {
+            Jomy.Keyboard.resetDefault(Jomy.InputManager.keyMap.get(String(args[0])));
+          }
+        }
     }
   }
 })();

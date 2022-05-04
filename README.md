@@ -39,7 +39,7 @@ This is a **core** plugin. This means that it supposed to support other plugins.
 This plugin allows you to map a key to a control. For example, you can set the 'n'
 key to move the player up.
 
-This plugin requires the [Input manager](#input-manager) plugin.
+This plugin requires the [Input manager](#input-manager) plugin to be installed (above this plugin).
 
 <details>
   <summary>Details</summary>
