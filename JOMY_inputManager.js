@@ -1,7 +1,7 @@
 /*:
 * @author Jonas Everaert
 * @plugindesc Input manager core plugin
-* <be.jonaseveraert.mv.inputManager>
+* Requires the core plugin <be.jonaseveraert.mv.inputManager>
 *
 * @help
 * Detect input from keyboard / controller
@@ -131,7 +131,7 @@ class _JOMY_InputManager {
      */
     subTrigger(key, callback) {
         let callbacks = this._triggerEvents.get(key);
-        if (isIterable(callbacks)) {
+        if (Jomy.Core.utils.isIterable(callbacks)) {
             this._triggerEvents.set(key, [...callbacks, callback]);
         } else {
             this._triggerEvents.set(key, [callback]);
@@ -140,7 +140,7 @@ class _JOMY_InputManager {
 
     subRepeat(key, callback) {
         let callbacks = this._repeatEvents.get(key);
-        if (isIterable(callbacks)) {
+        if (Jomy.Core.utils.isIterable(callbacks)) {
             this._repeatEvents.set(key, [...callbacks, callback]);
         } else {
           this._repeatEvents.set(key, [callback]);
@@ -149,7 +149,7 @@ class _JOMY_InputManager {
 
     subLongPress(key, callback) {
         let callbacks = this._longPressEvents.get(key);
-        if (isIterable(callbacks)) {
+        if (Jomy.Core.utils.isIterable(callbacks)) {
           this._longPressEvents.set(key, [...callbacks, callback]);
         } else {
           this._longPressEvents.set(key, [callback]);
@@ -195,27 +195,6 @@ class _JOMY_InputManager {
     }
 }
 
-function isIterable(obj) {
-    if (obj == null) {
-        return false;
-    }
-
-    return typeof obj[Symbol.iterator] === 'function';
-}
-
-/*
-Jomy.InputManager = new class {
-    // plugin info
-    static version = 1.00;
-
-    // plugin functions and parameters
-    static _someVar = 4;
-    static subscribeToInput() {}
-    static update() {
-        this._someVar += 1;
-    }
-}
-*/
 Jomy.InputManager = new _JOMY_InputManager();
 Jomy.InputManager.version = _JOMY_InputManager.version;
 Jomy.InputManager.keyMap = _JOMY_InputManager.keyMap;
@@ -233,15 +212,4 @@ Jomy.InputManager.resetKeys = _JOMY_InputManager.resetKeys;
         update.call(this);
         Jomy.InputManager.executeTriggers();
     };
-
-    // Register commands
-    // const allPluginCommands = Game_Interpreter.prototype.pluginCommand;
-    // Game_Interpretter.prototype.pluginCommand = function(command, args) {
-    //   allPluginCommands.call(this);
-
-    //   switch (command) {
-    //     case 'someCommand':
-    //       break;
-    //   }
-    // }
 })()

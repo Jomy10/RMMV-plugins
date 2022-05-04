@@ -10,6 +10,8 @@ Copy the `.js` files to `your-project-folder/js/plugins/`. Then, go to the `plug
 ### [Input manager](JOMY_inputManager.js)
 This is a **core** plugin. This means that it supposed to support other plugins. This plugin is used by the [keyboard](#keyboard) plugin.
 
+This plugin requires the [Core](JOMY_Core.js) plugin to work!
+
 <details>
   <summary>Details</summary>
 
@@ -56,6 +58,18 @@ This plugin requires the [Input manager](#input-manager) plugin to be installed 
   `COMMAND <type> [keyCode|keyName]`
 
   - `map [key] [keycode]`
+  <details>
+    <summary>key events</summary>
+    The possible values for the `key` argument are:
+    - up
+    - down
+    - left
+    - right
+    - escape
+    - ok
+    - debug
+    - shift
+  </details
   - `reset <type> [keyCode|keyName]`
 
   #### Examples
