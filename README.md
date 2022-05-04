@@ -7,6 +7,8 @@ Copy the `.js` files to `your-project-folder/js/plugins/`. Then, go to the `plug
 
 ## Plugin list
 
+*Click on the plugin name to download the plugin!*
+
 ### [Input manager](JOMY_inputManager.js)
 This is a **core** plugin. This means that it supposed to support other plugins. This plugin is used by the [keyboard](#keyboard) plugin.
 
