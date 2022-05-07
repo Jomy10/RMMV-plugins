@@ -2,6 +2,8 @@
 * @author Jonas Everaert
 * @plugindesc
 * Core rendering plugin
+* Requires the JOMY_Core plugin
+* <be.jonaseveraert.mv.renderCore>
 *
 * @help
 * == Access class ==
@@ -9,7 +11,7 @@
 */
 
 var Imported = Imported || {};
-Imported.JOMY_Core = true;
+Imported.JOMY_RenderCore = true;
 
 var Jomy = Jomy || {};
 
@@ -18,13 +20,22 @@ Jomy.Renderer = new class {
     this.loadedSprites = new Map();
   }
 
-  /** Add a sprite to the screen and index */
-  renderSprite(id, location, position = 0) {
+  /** Add a sprite to the screen and index
+  * @param id: unique id to reference the sprite by
+  * @param location: string containing the location of the image in the base folder
+  *                  e.g. "img/battle/bullet.png"
+  * @param position: { x: number, y: number }
+  */
+  renderSprite(id, location, position) {
     let bitmap = ImageManager.loadBitmap("", location);
     let sprite = new Sprite(bitmap);
     this.loadedSprites.set(id, sprite);
 
     SceneManager._scene.addChild(sprite);
+
+    if (position != null) {
+      this.moveAbsSprite(id, position.x, position.y)
+    }
   }
 
   /** Remove a sprite from the index and the screen */
@@ -37,7 +48,7 @@ Jomy.Renderer = new class {
 
   /** Move a sprite to an absolute position */
   moveAbsSprite(id, x, y) {
-    this.loadedSprites.get(id).selectedSprite.move(x, y);
+    this.loadedSprites.get(id).move(x, y);
   }
 
   /** Move a sprite to an position relative to itself */

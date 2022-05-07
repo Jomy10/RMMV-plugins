@@ -2,7 +2,7 @@
 * @author Jonas Everaert
 * @plugindesc Cast a ray to detect events
 * <be.jonaseveraert.mv.eventDetection>
-* 
+*
 * @help
 * Detect events in front of player:
 * `JOMY$eventDetection.getFirstEvent()`
@@ -14,8 +14,6 @@ var Imported = Imported || {};
 Imported.JOMY_eventDetection = true;
 
 var Jomy = Jomy || {};
-Jomy.eventDetection = Jomy.eventDetection || {};
-Jomy.eventDetection.version = 1.00;
 
 /** Detect events in front of the player */
 class JOMY$eventDetection {
@@ -106,3 +104,6 @@ class JOMY$eventDetection {
         }
     }
 }
+
+Jomy.eventDetection = JOMY$eventDetection;
+Jomy.eventDetection.version = 1.00;
