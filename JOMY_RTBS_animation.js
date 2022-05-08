@@ -62,7 +62,8 @@ const RTBS_Animation = {
   },
   playEnemyAttackAnimation: function(enemy, type, target) {
     if (type == "player") {
-      $gamePlayer.followers().follower(0).requestAnimation(enemy.attackAnimationId);
+
+      $gamePlayer.requestAnimation(1);//enemy.attackAnimationId);
       // _JOMY_RTBS_PlayAnimationAt($gamePlayer.x, $gamePlayer.y, enemy.attackAnimationId);
     }
   }
@@ -91,6 +92,7 @@ function _JOMY_RTBS_PlayAnimationAt(x, y, animationId) {
   let onDefaultEnemyCommentKey = RTBS_Manager.prototype._onDefaultEnemyCommentKey;
   RTBS_Manager.prototype._onDefaultEnemyCommentKey = function(comment, enemy) {
     onDefaultEnemyCommentKey.call(this);
+    if (comment == null) return;
     switch (comment.getKey()) {
       case "AttackAnimationId":
         enemy.attackAnimationId = Number(comment.getValue());

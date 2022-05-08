@@ -7,7 +7,12 @@ Copy the `.js` files to `your-project-folder/js/plugins/`. Then, go to the `plug
 
 ## Plugin list
 
-*Click on the plugin name to download the plugin!*
+<!-- *Click on the plugin name to download the plugin!* -->
+
+### RTBS plugins
+[RTBS](JOMY_RTBS_Core.js) is a **Real-Time Battle System**. There are [attack animations](JOMY_RTBS_animation.js) and the ability to use [weapons](JOMY_RTBS_weapons.js).
+
+Sorry for the lack of documentation on this plugin, feel free to open an issue, I'll explain it in detail!
 
 ### [Input manager](JOMY_inputManager.js)
 This is a **core** plugin. This means that it supposed to support other plugins. This plugin is used by the [keyboard](#keyboard) plugin.
@@ -39,7 +44,7 @@ This plugin requires the [Core](JOMY_Core.js) plugin to work!
   ```
 </details>
 
-### [Keyboard](JOMY_keyboardjs)
+### [Keyboard](JOMY_keyboard.js)
 This plugin allows you to map a key to a control. For example, you can set the 'n'
 key to move the player up.
 

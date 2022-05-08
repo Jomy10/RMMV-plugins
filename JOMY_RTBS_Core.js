@@ -27,18 +27,6 @@ var Imported = Imported || {};
 Imported.JOMY_rtbs_core = true;
 
 class RTBS_Enemy {
-  /*
-  constructor(id, health, attack, speed, event) {
-    this.id = id;
-    this.totalHealth = health;
-    this.health = health;
-    this.attack = attack;
-    this.event = event;
-    this.speed = speed;
-    this.lastAttack = 0;
-  }
-  */
-
   constructor(id, event) {
     this.id = id;
     this.event = event;
@@ -277,7 +265,7 @@ function reset_rtbs() {
         case 3:
           positionCheck.x -= 1;
           break;
-        }
+      }
 
       if ($gamePlayer.x == positionCheck.x && $gamePlayer.y == positionCheck.y && ((enemy.lastAttack + enemy.speed) <= elapsedSeconds)) {
         console.log("attacking");
