@@ -21,6 +21,9 @@
 * - `Attack: <value>`: The enemy's attack damage
 * - `Health: <value>`: The total health of the enemy
 * - `Speed: <value>`: The attack speed of the enemy in miliseconds (e.g. 1500 = 1.5 seconds)
+*
+* === Handle enemy death ===
+* Add another event page to the enemy event and the Self Switch condition to A
 */
 
 var Imported = Imported || {};
@@ -54,6 +57,9 @@ class RTBS_Enemy {
     if (this.health <= 0) {
       $gameSelfSwitches.setValue([$gameMap.mapId(), this.event.eventId(), 'A'], true);
       $rtbs_manager.removeEnemy(this.id);
+      // Clear event's pathfinding
+      if (Imported.Jomy_RTBS_enemyPathfind)
+        this.event.clearTarget();
     }
   }
 }
@@ -72,6 +78,7 @@ class RTBS_Manager {
   }
 
   findEnemyWithUUID(uuid) {
+    uuid = Number(uuid);
     for (let enemy of this.enemies) {
       if (enemy.id == uuid) {
         return enemy;
@@ -114,9 +121,13 @@ class RTBS_Manager {
           if (comment.getKey() == "rtbs_enemy_id") {
             let enemy_uuid = comment.getValue();
             let enemy = this.findEnemyWithUUID(enemy_uuid);
-            enemy.getsAttacked($rtbs_player.rtbs.atk());
-            this._onPlayerAttacks(event);
-            missed = false
+            if (enemy == null) {
+              console.error("Found no enemy in front of player")
+            } else {
+              enemy.getsAttacked($rtbs_player.rtbs.atk());
+              this._onPlayerAttacks(event);
+              missed = false
+            }
           }
         } // end for param
       } // end for line

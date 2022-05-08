@@ -53,8 +53,6 @@ const RTBS_Animation = {
       case 3: pos.x -= 1; animationId = animationIds[2]; break;
     }
 
-    console.log(animationId);
-
     // Show animation
     if (target == null) {
       _JOMY_RTBS_PlayAnimationAt(pos.x, pos.y, animationId);

@@ -22,6 +22,9 @@
 * see the player. An enemy's view can be blocked using a region tag
 */
 
+var Imported = Imported || {};
+Imported.Jomy_RTBS_enemyPathfind = true;
+
 (function() {
   let plugin = $plugins.filter(function(p) {
     return p.description.contains('<be.jonaseveraert.mv.RTBS.pathfind>') && p.status;
