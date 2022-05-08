@@ -43,7 +43,7 @@ class RTBS_Enemy {
     this._onAttackTarget(target);
   }
 
-  /** Meant to be overriden */
+  /** Meant to be ovrwritten */
   _onAttackTarget(target) {}
 
   /** Called when the enemy is attacked */
@@ -52,7 +52,8 @@ class RTBS_Enemy {
     this.health -= damage;
     console.log("Enemy HP:", this.health);
     if (this.health <= 0) {
-      console.log("Enemy is dead"); // TODO
+      $gameSelfSwitches.setValue([$gameMap.mapId(), this.event.eventId(), 'A'], true);
+      $rtbs_manager.removeEnemy(this.id);
     }
   }
 }
@@ -64,6 +65,10 @@ class RTBS_Manager {
 
   addEnemy(enemy) {
     this.enemies.push(enemy);
+  }
+
+  removeEnemy(enemyId) {
+    this.enemies = this.enemies.filter((e) => { return e.id != enemyId; });
   }
 
   findEnemyWithUUID(uuid) {
@@ -243,40 +248,42 @@ function reset_rtbs() {
   Window_Base.prototype.update = function() {
     update.call(this);
 
-    let elapsedSeconds = performance.now();
+    if (!(SceneManager._scene instanceof Scene_Menu || SceneManager._scene instanceof Scene_Title)) { // not in a menu (including main menu)
+      let elapsedSeconds = performance.now();
 
-    // Check if enemy attacks
-    $rtbs_manager.enemies.forEach((enemy) => {
-      let positionCheck = { x: enemy.event.x, y: enemy.event.y };
-      switch ( Jomy.Core.utils.rmmvDirToGameDir(enemy.event._direction) ) {
-        // up
-        case 0:
-          positionCheck.y -= 1;
-          break;
-        // right
-        case 1:
-          positionCheck.x += 1;
-          break;
-        // down
-        case 2:
-          positionCheck.y += 1;
-          break;
-        // left
-        case 3:
-          positionCheck.x -= 1;
-          break;
+      // Check if enemy attacks
+      $rtbs_manager.enemies.forEach((enemy) => {
+        let positionCheck = { x: enemy.event.x, y: enemy.event.y };
+        switch ( Jomy.Core.utils.rmmvDirToGameDir(enemy.event._direction) ) {
+          // up
+          case 0:
+            positionCheck.y -= 1;
+            break;
+          // right
+          case 1:
+            positionCheck.x += 1;
+            break;
+          // down
+          case 2:
+            positionCheck.y += 1;
+            break;
+          // left
+          case 3:
+            positionCheck.x -= 1;
+            break;
+        }
+
+        if ($gamePlayer.x == positionCheck.x && $gamePlayer.y == positionCheck.y && ((enemy.lastAttack + enemy.speed) <= elapsedSeconds)) {
+          console.log("attacking");
+          enemy.attackTarget($rtbs_player, elapsedSeconds);
+        }
+      });
+
+      // Check if player is dead
+      if ($rtbs_player.hp == 0) {
+        console.log("dead");
+        $rtbs_player.setHp($rtbs_player.mhp);
       }
-
-      if ($gamePlayer.x == positionCheck.x && $gamePlayer.y == positionCheck.y && ((enemy.lastAttack + enemy.speed) <= elapsedSeconds)) {
-        console.log("attacking");
-        enemy.attackTarget($rtbs_player, elapsedSeconds);
-      }
-    });
-
-    // Check if player is dead
-    if ($rtbs_player.hp == 0) {
-      console.log("dead");
-      $rtbs_player.setHp($rtbs_player.mhp);
     }
   }; // end game loop
 })();

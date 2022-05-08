@@ -146,14 +146,22 @@
           this.event.setTarget(_event);
       }
     } else if (other != null) {
-      // pathfind to location
-      if (this.event._targetX == other.x && this.event._targetY == other.y)
+      // pathfind to location;
+      if (this.event._targetX != other.x && this.event._targetY != other.y)
         this.event.setTarget(null, other.x, other.y);
     }
   };
 
   RTBS_Enemy.prototype.pathfindToPlayer = function() {
     this.pathfindTo(-1);
+  }
+
+  RTBS_Enemy.prototype.isPointInPathfindRadius = function(x, y) {
+    return isPointInCircle(this.event.x, this.event.y, this.pathfindRadius, x, y);
+  }
+
+  RTBS_Enemy.prototype.isPointInRadius = function(x, y, radius) {
+    return isPointInCircle(this.event.x, this.event.y, radius, x, y);
   }
 
   // Game loop

@@ -34,7 +34,7 @@ function _getPlayerLightEvents() {
             const event = $gameMap.event(eventId);
             if (event != null) {
                 for (let tag of Jomy.playerFollower.eventTags)
-                  if (event.event().note.contains(tag)) {
+                  if (event instanceof Game_Event && event.event().note.contains(tag)) {
                     events.push(eventId);
                   }
             }

@@ -15,7 +15,7 @@
 */
 
 var Imported = Imported || {};
-Imported.JOMY_rtbs_weeapons = true;
+Imported.JOMY_rtbs_weapons = true;
 
 var Jomy = Jomy || {};
 Jomy.RTBS_Weapons = {};
@@ -38,6 +38,19 @@ class RTBS_Weapon {
       weapon.animationId + 3,
     ];
     this.id = weapon.id;
+
+    this.ranged = false;
+    this._parseWeaponNotes()
+  }
+
+  _parseWeaponNotes() {
+    for (let note of this._weapon.note.split("\n")) {
+      switch (note.trim()) {
+        case "<RTBS-ranged>":
+          this.ranged = true;
+          break;
+      }
+    }
   }
 
   equip() {
@@ -58,13 +71,15 @@ class RTBS_Weapon {
   Window_Base.prototype.update = function() {
     update.call(this);
 
-    // Add weapons
-    let equippedWeapon = $gameActors.actor(1).equips()[0];
-    if (equippedWeapon == null) {
-      $rtbs_player.rtbs.equippedWeapon = null; // unequip weapon
-    } else if ($rtbs_player.rtbs.equippedWeapon == null || equippedWeapon.id != $rtbs_player.rtbs.equippedWeapon.id) {
-      let weapon = new RTBS_Weapon(equippedWeapon);
-      weapon.equip();
+    if (!(SceneManager._scene instanceof Scene_Menu || SceneManager._scene instanceof Scene_Title)) { // not in a menu (including main menu)
+      // Add weapons
+      let equippedWeapon = $gameActors.actor(1).equips()[0];
+      if (equippedWeapon == null) {
+        $rtbs_player.rtbs.equippedWeapon = null; // unequip weapon
+      } else if ($rtbs_player.rtbs.equippedWeapon == null || equippedWeapon.id != $rtbs_player.rtbs.equippedWeapon.id) {
+        let weapon = new RTBS_Weapon(equippedWeapon);
+        weapon.equip();
+      }
     }
   }
 

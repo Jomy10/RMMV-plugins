@@ -53,6 +53,8 @@ const RTBS_Animation = {
       case 3: pos.x -= 1; animationId = animationIds[2]; break;
     }
 
+    console.log(animationId);
+
     // Show animation
     if (target == null) {
       _JOMY_RTBS_PlayAnimationAt(pos.x, pos.y, animationId);
@@ -124,19 +126,26 @@ function _JOMY_RTBS_PlayAnimationAt(x, y, animationId) {
   Scene_Map.prototype.onMapLoaded = function() {
     mapLoaded.call(this);
 
-    // Get the setup event
-    Jomy.RTBS_Animation.$animationEvent = function() {
-      if ($dataMap != null) {
-        for (eventId in $dataMap.events) {
-          const event = $gameMap.event(eventId);
-          if (event != null && event.event().note.contains("<RTBS-setup>")) {
-            return event;
+    if (!(SceneManager._scene instanceof Scene_Menu || SceneManager._scene instanceof Scene_Title)) { // not in a menu (including main menu)
+      // Get the setup event
+      Jomy.RTBS_Animation.$animationEvent = function() {
+        if ($dataMap != null) {
+          for (eventId in $dataMap.events) {
+            let event = $gameMap.event(eventId);
+            if (event != null && event.event().note.contains("<RTBS-setup>")) {
+              return event;
+            }
           }
         }
-      }
-    }();
+      }();
 
-    Jomy.RTBS_Animation.$animationEvent.setPriorityType(2);
-    Jomy.RTBS_Animation.$animationEvent.setMoveSpeed(999999999);
+
+      if (Jomy.RTBS_Animation.$animationEvent != null) {
+        Jomy.RTBS_Animation.$animationEvent.setPriorityType(2);
+        Jomy.RTBS_Animation.$animationEvent.setMoveSpeed(999999999);
+      } else {
+        console.error("No event with <RTBS-setup> note");
+      }
+    }
   };
 })();
