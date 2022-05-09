@@ -1,5 +1,5 @@
 /*:
-* @author
+* @author Jonas Everaert
 * @plugindesc Adds an npc companion to the player.
 *
 * @help
@@ -22,7 +22,6 @@
 // and always when going to the player
 
 class _Companion {
-
   constructor(event, followFrequency = 2500, wanderFrequency = 7500) {
     this._event = event;
     this.nextFollowEvent = 0;

@@ -156,7 +156,12 @@ Imported.Jomy_RTBS_enemyPathfind = true;
   };
 
   RTBS_Enemy.prototype.pathfindToPlayer = function() {
-    this.pathfindTo(-1);
+    // this.pathfindTo(-1);
+    // this.pathfindTo({x: $gamePlayer.x, y: $gamePlayer.y});
+    let x = $gamePlayer.x;
+    let y = $gamePlayer.y;
+    if (this.event._targetX != x && this.event._targetY != y)
+      this.event.setTarget(null, x, y);
   }
 
   RTBS_Enemy.prototype.isPointInPathfindRadius = function(x, y) {
@@ -167,23 +172,30 @@ Imported.Jomy_RTBS_enemyPathfind = true;
     return isPointInCircle(this.event.x, this.event.y, radius, x, y);
   }
 
+  let nextCall = 0;
   // Game loop
   let update = Window_Base.prototype.update;
   Window_Base.prototype.update = function() {
     update.call(this);
-    for (let enemy of $rtbs_manager.enemies) {
-      if (enemy.pathfindRadius != null) {
-        if (
-          isPointInCircle(enemy.event.x, enemy.event.y, enemy.pathfindRadius, $gamePlayer.x, $gamePlayer.y)
-          && (
-            isPointInFrontOf(enemy.event.x, enemy.event.y, enemy.event.direction(), $gamePlayer.x, $gamePlayer.y)
-            || isPointCloseTo(enemy.event.x, enemy.event.y, $gamePlayer.x, $gamePlayer.y)
-          )
-          && !isPointBlockedByObjects(enemy.event.x, enemy.event.y, $gamePlayer.x, $gamePlayer.y, enemy.pathfindRadius * 4, wallObjects)
-        ) {
-          enemy.pathfindToPlayer();
+
+    let time = performance.now();
+
+    if (nextCall < time) {
+      nextCall = time + 500; // TODO: dynamically set pathfinding step
+      for (let enemy of $rtbs_manager.enemies) {
+        if (enemy.pathfindRadius != null) {
+          if (
+            isPointInCircle(enemy.event.x, enemy.event.y, enemy.pathfindRadius, $gamePlayer.x, $gamePlayer.y)
+            && (
+              isPointInFrontOf(enemy.event.x, enemy.event.y, enemy.event.direction(), $gamePlayer.x, $gamePlayer.y)
+              || isPointCloseTo(enemy.event.x, enemy.event.y, $gamePlayer.x, $gamePlayer.y)
+            )
+            && !isPointBlockedByObjects(enemy.event.x, enemy.event.y, $gamePlayer.x, $gamePlayer.y, enemy.pathfindRadius * 4, wallObjects)
+          ) {
+            enemy.pathfindToPlayer();
+          }
         }
       }
-    }
+    } // endif
   }
 })();

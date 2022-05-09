@@ -130,7 +130,15 @@ function _JOMY_RTBS_PlayAnimationAt(x, y, animationId) {
         if ($dataMap != null) {
           for (eventId in $dataMap.events) {
             let event = $gameMap.event(eventId);
-            if (event != null && event.event().note.contains("<RTBS-setup>")) {
+            let _event;
+            try {
+              _event = event.event();
+            } catch {
+              // TODO: throw error
+              console.error("Missing <RTBS-setup> event");
+              return;
+            }
+            if (event != null && _event.note.contains("<RTBS-setup>")) {
               return event;
             }
           }
