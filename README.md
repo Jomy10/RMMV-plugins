@@ -7,12 +7,12 @@ Copy the `.js` files to `your-project-folder/js/plugins/`. Then, go to the `plug
 
 ## Plugin list
 
-<!-- *Click on the plugin name to download the plugin!* -->
-
 ### RTBS plugins
-[RTBS](JOMY_RTBS_Core.js) is a **Real-Time Battle System**. There are [attack animations](JOMY_RTBS_animation.js) and the ability to use [weapons](JOMY_RTBS_weapons.js).
+[RTBS](JOMY_RTBS_Core.js) is a **Real-Time Battle System**. There are [attack animations](JOMY_RTBS_animation.js), the ability to use [weapons](JOMY_RTBS_weapons.js) and many more.
 
 Sorry for the lack of documentation on this plugin, feel free to open an issue, I'll explain it in detail!
+
+The RTBS plugins will also require some of the other plugins to be installed, like the Core plugin, Input Manager and Keyboard, Render Core and Event Detection.
 
 ### [Input manager](JOMY_inputManager.js)
 This is a **core** plugin. This means that it supposed to support other plugins. This plugin is used by the [keyboard](#keyboard) plugin.
@@ -76,7 +76,7 @@ This plugin requires the [Input manager](#input-manager) plugin to be installed 
     - ok
     - debug
     - shift
-  </details
+  </details>
   - `reset <type> [keyCode|keyName]`
 
   #### Examples
@@ -139,6 +139,22 @@ Make an event follow a player by giving it a note of `<player-follower>`
 
 ### [Event Detection](JOMY_eventDetection.js)
 Detect events in front of the player.
+
+### [Companion](JOMY_companion.js)
+A companion that will follow the player, but not as strict as a party member. It will follow the player more naturally.
+
+<details>
+  <summary>Details</summary>
+  Add \<companion\> to the note of an event
+
+  #### Additional comments
+  - `FollowFrequency: <value>` the frequency with which an event will search for a path to the player in milliseconds
+  - `WandeerFrequency: <value>` the frequency with which an event will search for another spot around the player to wander to milliseconds (set to -1 to disable wandering)
+
+  You can use Game_Event.companion in scripting to access the companion object.
+  - `Game_Event.companion.abortMovement()` will stop all movement of the companion.
+  - `Game_Event.companion.resumeMovement()` will resume its movement behaviour.
+</details>
 
 ## License
 
