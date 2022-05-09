@@ -65,6 +65,7 @@ const Jomy_KeyMap = new Map([
   ['7', 55],
   ['8', 56],
   ['9', 57],
+  ['<', 60],
   ['a', 65],
   ['b', 66],
   ['c', 67],
@@ -136,6 +137,11 @@ class _JOMY_InputManager {
         } else {
             this._triggerEvents.set(key, [callback]);
         }
+    }
+
+    /** Remove all triggers for a secified key */
+    removeTriggers(key) {
+      this._triggerEvents.delete(key);
     }
 
     subRepeat(key, callback) {

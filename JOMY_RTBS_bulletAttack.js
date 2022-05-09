@@ -22,6 +22,7 @@ class __BulletManager {
     this.bullets = [];
   }
 
+  // TODO: custom sprite
   addBullet(pos, dir, speed = 1, damage = 10, piercingCount = 1, alertsEnemies = true, alertPosition = {x: $gamePlayer.x, y: $gamePlayer.y}) {
     let id = Jomy.Core.utils.genUUID();
     this.bullets.push({
@@ -43,7 +44,6 @@ class __BulletManager {
 
     if (alertsEnemies) {
       let timeout =  Math.floor(Math.random() * 1500);
-      console.log(timeout);
       for (let enemy of $rtbs_manager.enemies) {
         if (enemy.isPointInRadius(alertPosition.x, alertPosition.y, enemy.pathfindRadius * 1.75)) {
           let timer = window.setTimeout(() => {
@@ -84,6 +84,7 @@ class __BulletManager {
   }
 
   removeBullet(bullet) {
+    console.log("Removing bullet", bullet.id);
     this._disposeBulletSprite(bullet);
     this.bullets = this.bullets.filter((b) => { return b.id != bullet.id; });
   }
@@ -111,6 +112,29 @@ class __BulletManager {
   _disposeBulletSprite(bullet) {
     Jomy.Renderer.removeSprite(bullet.id);
   }
+
+  setRangedWeaponButton(button) {
+    let prevButton = this.selectedWeaponButton;
+    Jomy.InputManager.removeTriggers(prevButton);
+
+    this.selectedWeaponButton = button;
+    Jomy.InputManager.subTrigger(button, () => {
+      let currentRangedWeapon = $rtbs_player.rtbs.equippedRangedWeapon;
+
+      if (currentRangedWeapon == null) return;
+
+      this.addBullet(
+        {x: $gamePlayer.screenX(), y: $gamePlayer.screenY()}, // pos
+        Jomy.Core.utils.rmmvDirToGameDir($gamePlayer.direction()), // dir
+        currentRangedWeapon.ranged_speed, // speed
+        currentRangedWeapon.atk, // damage
+        currentRangedWeapon.ranged_piercingCount, // piercingCount
+        currentRangedWeapon.ranged_alerts, // alerts enemies
+        {x: $gamePlayer.x, y: $gamePlayer.y} // alertPosition (game tiles)
+      );
+      console.log(this.bullets);
+    });
+  };
 }
 
 let $bulletManager = new __BulletManager();
