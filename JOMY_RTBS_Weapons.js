@@ -148,5 +148,5 @@ class RTBS_Weapon {
     map.call(this);
 
     $rtbs_player.rtbs.fistAnimationId = fistAnimationId;
-  }
+  };
 })();
