@@ -13,6 +13,12 @@
 * @type number
 * @default 1
 *
+* @param Pathfinding step
+* @desc
+* The amount of miliseconds to wait before checking for a new path to the player
+* @type number
+* @default 500
+*
 * @help
 * Require's Shaz' smart pathfinding plugin to be installed (above this plugin)
 * Get it at: https://forums.rpgmakerweb.com/index.php?threads/smart-pathfinding.46761/
@@ -29,6 +35,7 @@ Imported.Jomy_RTBS_enemyPathfind = true;
 
 var Jomy = Jomy || {};
 Jomy.RTBS_PathFind = {};
+Jomy.RTBS_PathFind.version = 2.0;
 
 (function() {
   let plugin = $plugins.filter(function(p) {
@@ -37,79 +44,7 @@ Jomy.RTBS_PathFind = {};
 
   let blockingRegionTag = Number(plugin.parameters["Blocking Tile Tag"]);
   let blockingTerrainTag = Number(plugin.parameters["Blocking Terrain Tag"]);
-
-  /** Check if a point lies in a circle */
-  function isPointInCircle(x, y, radius, a, b) {
-    let distPoints = (x - a) * (x - a) + (y - b) * (y - b);
-    radius *= radius;
-    if (distPoints < radius) {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  Jomy.RTBS_PathFind.isPointInCircle = isPointInCircle;
-
-  /** Check wheter an object can be seen from (`x1`, `y1`).
-   * (`x2`, `y2`) are the object's coordinates
-   * `accuracy` is the amount of points the function will check
-   * `objects` contains the coordinates of the objects that might block the view
-   */
-  function isPointBlockedByObjects(x1, y1, x2, y2, accuracy, objects) {
-    if (!Jomy.Core.utils.isIterable(objects)) {
-      return true;
-    }
-
-    for (let i = 0; i < accuracy; i++) {
-      let t = i / accuracy;
-
-      let pointBetweenStartEnd = {
-        x: t * x2 + (1 - t) * x1,
-        y: t * y2 + (1 - t) * y1
-      };
-
-      for (let object of objects) {
-        if (
-          Math.round(pointBetweenStartEnd.x) == object.x
-            && Math.round(pointBetweenStartEnd.y) == object.y
-        ) {
-          return true;
-        }
-      }
-    } // endfor
-
-    return false;
-  }
-
-  Jomy.RTBS_PathFind.isPointBlockedByObjects = isPointBlockedByObjects;
-
-  /// Checks if a point is in front of a player. Includes being on the same line
-  function isPointInFrontOf(x, y, dir, a, b) {
-    switch (Jomy.Core.utils.rmmvDirToGameDir(dir)) {
-      case 0:
-        // up
-        return b <= y;
-      case 3:
-        // left
-        return a <= x;
-      case 2:
-        // down
-        return b >= y;
-      case 1:
-        // right
-        return a >= x;
-    }
-  }
-
-  Jomy.RTBS_PathFind.isPointInFrontOf = isPointInFrontOf;
-
-  function isPointCloseTo(x, y, a, b) {
-    return ((x + 1) == a || (x - 1 == a) || (x == a))
-      && ((y + 1) == b || (y - 1) == b || (y == b));
-  }
-
-  Jomy.RTBS_PathFind.isPointCloseTo = isPointCloseTo;
+  let pathfindingStep = Number(plugin.parameters["Pathfinding step"]);
 
   let wallObjects = [];
 
@@ -144,40 +79,29 @@ Jomy.RTBS_PathFind = {};
    * other = eventId
    * other = -1: player
    * other = { x: number, y: number }: location
+   * @Deprecated
    */
   RTBS_Enemy.prototype.pathfindTo = function(other) {
-    // TODO: remake using new pathfinding
-
-    this.event.clearTarget();
     if (typeof other == "number") {
       // let interpreter = $gameMap._interpreter;
       // console.log(interpreter);
-      // interpreter.pluginCommand("SmartPath", [String(this.event.eventId()), String(other)]);
-      // PluginManager.callCommand(this.event, shazPluginName, "SmartPath", [String(this.event.eventId()), String(other)]);
       if (other == -1) {
-        // Player can hide again (enemy goes to last known location)
-        this.event.setTarget(null, $gamePlayer.x, $gamePlayer.y);
+        // TODO: Player can hide again (enemy goes to last known location)
+        this.pathFindToPlayer();
       } else {
         // get event
         let _event = $gameMap.event(other);
-        if (this.event._target != _event)
-          this.event.setTarget(_event);
+        this.pathfindTarget = {x: _event.x, y: _event.y};
       }
     } else if (other != null) {
       // pathfind to location;
-      if (this.event._targetX != other.x && this.event._targetY != other.y)
-        this.event.setTarget(null, other.x, other.y);
+      this.pathfindTarget = other;
     }
   };
 
+
   RTBS_Enemy.prototype.pathfindToPlayer = function() {
-    // this.pathfindTo(-1);
-    // this.pathfindTo({x: $gamePlayer.x, y: $gamePlayer.y});
-    let x = $gamePlayer.x;
-    let y = $gamePlayer.y;
-    // if (this.event._targetX != x && this.event._targetY != y)
-    //  this.event.setTarget(null, x, y);
-    this.pathfindTarget = {x: x, y: y};
+    this.pathfindTarget = {x: $gamePlayer.x, y: $gamePlayer.y};
   }
 
   RTBS_Enemy.prototype.stopPathfind = function() {
@@ -185,11 +109,11 @@ Jomy.RTBS_PathFind = {};
   }
 
   RTBS_Enemy.prototype.isPointInPathfindRadius = function(x, y) {
-    return isPointInCircle(this.event.x, this.event.y, this.pathfindRadius, x, y);
+    return Jomy.PathFind.isPointInCircle(this.event.x, this.event.y, this.pathfindRadius, x, y);
   }
 
   RTBS_Enemy.prototype.isPointInRadius = function(x, y, radius) {
-    return isPointInCircle(this.event.x, this.event.y, radius, x, y);
+    return Jomy.PathFind.isPointInCircle(this.event.x, this.event.y, radius, x, y);
   }
 
   let nextCall = 0;
@@ -201,16 +125,16 @@ Jomy.RTBS_PathFind = {};
     let time = performance.now();
 
     if (nextCall < time) {
-      nextCall = time + 500; // TODO: dynamically set pathfinding step
+      nextCall = time + pathfindingStep; // TODO: dynamically set pathfinding step
       for (let enemy of $rtbs_manager.enemies) {
         if (enemy.pathfindRadius != null) {
           if (
-            isPointInCircle(enemy.event.x, enemy.event.y, enemy.pathfindRadius, $gamePlayer.x, $gamePlayer.y)
+            Jomy.PathFind.isPointInCircle(enemy.event.x, enemy.event.y, enemy.pathfindRadius, $gamePlayer.x, $gamePlayer.y)
             && (
-              isPointInFrontOf(enemy.event.x, enemy.event.y, enemy.event.direction(), $gamePlayer.x, $gamePlayer.y)
-              || isPointCloseTo(enemy.event.x, enemy.event.y, $gamePlayer.x, $gamePlayer.y)
+              Jomy.PathFind.isPointInFrontOf(enemy.event.x, enemy.event.y, enemy.event.direction(), $gamePlayer.x, $gamePlayer.y)
+              || Jomy.PathFind.isPointCloseTo(enemy.event.x, enemy.event.y, $gamePlayer.x, $gamePlayer.y)
             )
-            && !isPointBlockedByObjects(enemy.event.x, enemy.event.y, $gamePlayer.x, $gamePlayer.y, enemy.pathfindRadius * 4, wallObjects)
+            && !Jomy.PathFind.isPointBlockedByObjects(enemy.event.x, enemy.event.y, $gamePlayer.x, $gamePlayer.y, enemy.pathfindRadius * 4, wallObjects)
           ) {
             enemy.pathfindToPlayer();
           }
@@ -219,7 +143,7 @@ Jomy.RTBS_PathFind = {};
         // Move enemies
         let mapW = $gameMap.width();
         let mapH = $gameMap.height();
-        if (enemy.pathfindTarget != null /*&& !enemy.event.isMoving()*/) {
+        if (enemy.pathfindTarget != null) {
           let distance = Jomy.PathFind.$manager.getDistance(enemy.pathfindTarget);
           let enemyDist = distance.get({x: enemy.event.x, y: enemy.event.y});
           for (let pos of [

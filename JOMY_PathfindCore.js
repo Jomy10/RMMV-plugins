@@ -4,26 +4,30 @@
 * <be.jonaseveraert.mv.pathfindCore>
 *
 * @param Calculate paths on map load
-* @desc Longer initial load on maps, but better performane afterwards
+* @desc Might cause longer initial load on maps, but better performance afterwards
 * @type boolean
-* @default false
+* @default true
 *
 * @help
 * Put this plugin near the top of your plugin list
 *
 * == Script call ==
 * Jomy.PathFind.$manager.getLocation({x: 4, y: 5});
-* // Get location map and last update time to location (4, 5)
-*
-* Jomy.PathFind.$manager.getLocation({x: 4, y: 5}, 1500);
-* // Get location and recalculate if more than 1.5 seconds hav passed since
-* last location update.
-* Default value is 1000 (1.5 seconds) (this means that the first example will
-* refresh if more than 1 second passed since the last update).
+* // Get location map to location (4, 5)
+* With this, you can lookup any tile's distance to a point. Example:
+* ```
+* let distMap = Jomy.PathFind.$manager.getLocation({x: 4, y: 5});
+* let distance = distMap.get({x: 3, 6}); // Get the distance betweeen
+* (4,5) to (3, 6)
+* ```
 */
+
+// ============================================================================
 
 var Jomy = Jomy || {};
 Jomy.PathFind = {};
+
+// ============================================================================
 
 class _Jomy_PathFindManager {
   constructor() {
@@ -109,6 +113,8 @@ class JOMY_VecMap {
   }
 }
 
+// ============================================================================
+
 Jomy.PathFind.$manager = new _Jomy_PathFindManager();
 
 (function() {
@@ -125,7 +131,7 @@ Jomy.PathFind.$manager = new _Jomy_PathFindManager();
 
     // Get all objects that can't be walked on
     Jomy.PathFind.$manager.blockedPositions = new Set();
-      Jomy.PathFind.$manager.distances = new JOMY_VecMap();
+    Jomy.PathFind.$manager.distances = new JOMY_VecMap();
 
     for (let x = 0; x < $gameMap.width(); x++) {
       for (let y = 0; y < $gameMap.height(); y++) {
@@ -144,5 +150,81 @@ Jomy.PathFind.$manager = new _Jomy_PathFindManager();
         }
       }
     }
-  }
+  };
 })();
+
+// ============================================================================
+// Pathfinding field of view functions
+// ============================================================================
+
+/** Check if a point lies in a circle
+ * @param radius {number} - the radius of the circle
+ * @param x {number} - the x position of the middle point of the circle
+ * @param a {number} - the x position of the point that could be in the circle
+ */
+Jomy.PathFind.isPointInCircle = function(x, y, radius, a, b) {
+  let distPoints = (x - a) * (x - a) + (y - b) * (y - b);
+  radius *= radius;
+  if (distPoints < radius) {
+    return true
+  } else {
+    return false
+  }
+};
+
+/** Check wheter an object can be seen from (`x1`, `y1`).
+ * (`x2`, `y2`) are the object's coordinates
+ * @param x1 @param y1
+ * @param x2 @param y2
+ * @param accuracy is the amount of points the function will check
+ * @param objects contains the coordinates of the objects that might block the view
+ */
+Jomy.PathFind.isPointBlockedByObjects = function(x1, y1, x2, y2, accuracy, objects) {
+  if (!Jomy.Core.utils.isIterable(objects)) {
+    return true;
+  }
+
+  for (let i = 0; i < accuracy; i++) {
+    let t = i / accuracy;
+
+    let pointBetweenStartEnd = {
+      x: t * x2 + (1 - t) * x1,
+      y: t * y2 + (1 - t) * y1
+    };
+
+    for (let object of objects) {
+      if (
+        Math.round(pointBetweenStartEnd.x) == object.x
+          && Math.round(pointBetweenStartEnd.y) == object.y
+      ) {
+        return true;
+      }
+    }
+  } // endfor
+
+  return false;
+};
+
+/** Checks if a point is in front of a player. Includes being on the same line */
+Jomy.PathFind.isPointInFrontOf = function(x, y, dir, a, b) {
+  switch (Jomy.Core.utils.rmmvDirToGameDir(dir)) {
+    case 0:
+      // up
+      return b <= y;
+    case 3:
+      // left
+      return a <= x;
+    case 2:
+      // down
+      return b >= y;
+    case 1:
+      // right
+      return a >= x;
+  }
+};
+
+/** Checks wether a point is 1 tile away from another */
+Jomy.PathFind.isPointCloseTo = function(x, y, a, b) {
+  return ((x + 1) == a || (x - 1 == a) || (x == a))
+    && ((y + 1) == b || (y - 1) == b || (y == b));
+};

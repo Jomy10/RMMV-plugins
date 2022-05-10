@@ -3,6 +3,14 @@
 * @plugindesc Make events fight any <RTBS-enemy>
 * @help
 * Mark an event with <RTBS-battler> in its note to make them hostile towards enemies.
+*
+* == Required plugins ==
+* Require's Shaz' smart pathfinding plugin to be installed (above this plugin)
+* Get it at: https://forums.rpgmakerweb.com/index.php?threads/smart-pathfinding.46761/
+*
+* Requires JOMY_PathfindCore
+*
+* Place them above this plugin
 */
 
 class RTBS_Battler {
@@ -75,12 +83,14 @@ class RTBS_Battler {
   }
 
   pathfindTo(enemy) {
+    // TODO: new pathfinding (like enemie in enemyPathfind)
     this._event.setTarget(enemy.event);
   }
 
   getFirstCloseEnemy() {
     for (let enemy of $rtbs_manager.enemies) {
-      if (Jomy.RTBS_PathFind.isPointInCircle(this._event.x, this._event.y, this.pathfindRadius, enemy.x, enemy.y)) {
+      // TODO: field of view
+      if (Jomy.PathFind.isPointInCircle(this._event.x, this._event.y, this.pathfindRadius, enemy.x, enemy.y)) {
         return enemy;
       }
     }
@@ -132,6 +142,7 @@ class RTBS_Battler {
       nextCall = time + 500;
       for (let bat of $rtbs_manager.battlers) {
         bat.getFirstCloseEnemy();
+        // TODO: pathfind to enemy
       }
     }
   }
