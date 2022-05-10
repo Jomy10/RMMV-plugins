@@ -130,21 +130,19 @@ function _JOMY_RTBS_PlayAnimationAt(x, y, animationId) {
         if ($dataMap != null) {
           for (eventId in $dataMap.events) {
             let event = $gameMap.event(eventId);
-            let _event;
-            try {
-              _event = event.event();
-            } catch {
-              // TODO: throw error
-              console.error("Missing <RTBS-setup> event");
-              return;
-            }
-            if (event != null && _event.note.contains("<RTBS-setup>")) {
+
+            if (event == null) continue;
+            let _event = event.event();
+            if (_event.note.contains("<RTBS-setup>")) {
               return event;
             }
           }
         }
       }();
 
+      if (Jomy.RTBS_Animation.$animationEvent == null) {
+        console.log("Missing <RTBS-setup> event");
+      }
 
       if (Jomy.RTBS_Animation.$animationEvent != null) {
         Jomy.RTBS_Animation.$animationEvent.setPriorityType(2);

@@ -17,6 +17,8 @@
 * Require's Shaz' smart pathfinding plugin to be installed (above this plugin)
 * Get it at: https://forums.rpgmakerweb.com/index.php?threads/smart-pathfinding.46761/
 *
+* Requires JOMY_PathfindCore
+*
 * == Additional enemy comments ==
 * - `PathfindRadius: <value>`: The radius in which an enemy will check if it can
 * see the player. An enemy's view can be blocked using a region tag
@@ -24,6 +26,9 @@
 
 var Imported = Imported || {};
 Imported.Jomy_RTBS_enemyPathfind = true;
+
+var Jomy = Jomy || {};
+Jomy.RTBS_PathFind = {};
 
 (function() {
   let plugin = $plugins.filter(function(p) {
@@ -43,6 +48,8 @@ Imported.Jomy_RTBS_enemyPathfind = true;
       return false
     }
   }
+
+  Jomy.RTBS_PathFind.isPointInCircle = isPointInCircle;
 
   /** Check wheter an object can be seen from (`x1`, `y1`).
    * (`x2`, `y2`) are the object's coordinates
@@ -75,6 +82,8 @@ Imported.Jomy_RTBS_enemyPathfind = true;
     return false;
   }
 
+  Jomy.RTBS_PathFind.isPointBlockedByObjects = isPointBlockedByObjects;
+
   /// Checks if a point is in front of a player. Includes being on the same line
   function isPointInFrontOf(x, y, dir, a, b) {
     switch (Jomy.Core.utils.rmmvDirToGameDir(dir)) {
@@ -93,10 +102,14 @@ Imported.Jomy_RTBS_enemyPathfind = true;
     }
   }
 
+  Jomy.RTBS_PathFind.isPointInFrontOf = isPointInFrontOf;
+
   function isPointCloseTo(x, y, a, b) {
     return ((x + 1) == a || (x - 1 == a) || (x == a))
       && ((y + 1) == b || (y - 1) == b || (y == b));
   }
+
+  Jomy.RTBS_PathFind.isPointCloseTo = isPointCloseTo;
 
   let wallObjects = [];
 
@@ -133,6 +146,8 @@ Imported.Jomy_RTBS_enemyPathfind = true;
    * other = { x: number, y: number }: location
    */
   RTBS_Enemy.prototype.pathfindTo = function(other) {
+    // TODO: remake using new pathfinding
+
     this.event.clearTarget();
     if (typeof other == "number") {
       // let interpreter = $gameMap._interpreter;
@@ -160,8 +175,13 @@ Imported.Jomy_RTBS_enemyPathfind = true;
     // this.pathfindTo({x: $gamePlayer.x, y: $gamePlayer.y});
     let x = $gamePlayer.x;
     let y = $gamePlayer.y;
-    if (this.event._targetX != x && this.event._targetY != y)
-      this.event.setTarget(null, x, y);
+    // if (this.event._targetX != x && this.event._targetY != y)
+    //  this.event.setTarget(null, x, y);
+    this.pathfindTarget = {x: x, y: y};
+  }
+
+  RTBS_Enemy.prototype.stopPathfind = function() {
+    this.pathfindTarget = null;
   }
 
   RTBS_Enemy.prototype.isPointInPathfindRadius = function(x, y) {
@@ -195,7 +215,32 @@ Imported.Jomy_RTBS_enemyPathfind = true;
             enemy.pathfindToPlayer();
           }
         }
-      }
+
+        // Move enemies
+        let mapW = $gameMap.width();
+        let mapH = $gameMap.height();
+        if (enemy.pathfindTarget != null /*&& !enemy.event.isMoving()*/) {
+          let distance = Jomy.PathFind.$manager.getDistance(enemy.pathfindTarget);
+          let enemyDist = distance.get({x: enemy.event.x, y: enemy.event.y});
+          for (let pos of [
+            {x: enemy.event.x + 1, y: enemy.event.y},
+            {x: enemy.event.x, y: enemy.event.y + 1},
+            {x: enemy.event.x - 1, y: enemy.event.y},
+            {x: enemy.event.x, y: enemy.event.y - 1}
+          ]) {
+            if (pos.x < 0 || pos.y < 0 || pos.x > mapW || pos.y > mapH) continue;
+            let newDist = distance.get(pos)
+            if (newDist != 0 && newDist < enemyDist) {
+              if ($gameMap.eventIdXy(pos.x, pos.y) == 0) {
+                enemy.event.setTarget(null, pos.x, pos.y);
+                break;
+              }
+            } else if (newDist == 0) {
+              enemy.event.turnTowardPlayer();
+            }
+          }
+        }
+      } // endfor enemies
     } // endif
   }
 })();

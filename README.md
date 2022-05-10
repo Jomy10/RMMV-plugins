@@ -67,6 +67,7 @@ This plugin requires the [Input manager](#input-manager) plugin to be installed 
   - `map [key] [keycode]`
   <details>
     <summary>key events</summary>
+
     The possible values for the `key` argument are:
     - up
     - down
@@ -77,6 +78,7 @@ This plugin requires the [Input manager](#input-manager) plugin to be installed 
     - debug
     - shift
   </details>
+
   - `reset <type> [keyCode|keyName]`
 
   #### Examples
@@ -145,11 +147,12 @@ A companion that will follow the player, but not as strict as a party member. It
 
 <details>
   <summary>Details</summary>
-  Add \<companion\> to the note of an event
+
+  Add `<companion>` to the note of an event
 
   #### Additional comments
   - `FollowFrequency: <value>` the frequency with which an event will search for a path to the player in milliseconds
-  - `WandeerFrequency: <value>` the frequency with which an event will search for another spot around the player to wander to milliseconds (set to -1 to disable wandering)
+  - `WanderFrequency: <value>` the frequency with which an event will search for another spot around the player to wander to milliseconds (set to -1 to disable wandering)
 
   You can use Game_Event.companion in scripting to access the companion object.
   - `Game_Event.companion.abortMovement()` will stop all movement of the companion.
@@ -160,10 +163,8 @@ A companion that will follow the player, but not as strict as a party member. It
 
 All plugins are licensed under the [Apache License 2.0](LICENSE).
 
-In short, 2 things are expected of your:
+In short, 2 things are expected of you:
 - That you include the [license text](LICENSE) into the finished product that uses the plugins, giving proper credit.
 - That, if you change any of the plugins internal code, that you state what changes you made.
 
 Apart from these two conditions, you can do anything you want. The plugins can be used in both commercial and non-commercial games.
-
-More information about the license can be found [here](https://choosealicense.com/licenses/apache-2.0/).
