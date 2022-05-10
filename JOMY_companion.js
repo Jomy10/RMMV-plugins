@@ -16,9 +16,12 @@
 * You can use Game_Event.companion in scripting to access the companion object.
 * Game_Event.companion.abortMovement() will stop all movement of the companion.
 * Game_Event.companion.resumeMovement() will resume its movement behaviour.
+*
+* You can also add <RTBS-battler> to the note of the event to make the
+* companion fight off enemies when using the RTBS plugins
 */
 
-// TODO: make the companion face the player most of the times when wandering
+// TODO: make the companion face the same direction as the player most of the times when wandering
 // and always when going to the player
 
 class _Companion {
@@ -28,6 +31,13 @@ class _Companion {
     this.followFrequency = followFrequency;
     this.wanderFrequency = wanderFrequency;
     this.abortMovement = false;
+
+    // RTBS-battler integration
+    this.isBattler = (event.event().meta["RTBS-battler"]) || false;
+    this.battler = $rtbs_manager.findBattlerWithUUID(event.rtbs_battler_id);
+    if (this.isBattler && this.battler == null) {
+      console.error("Couldn't find battler");
+    }
   }
 
   abortMovement() {
@@ -40,6 +50,7 @@ class _Companion {
 
   /** Let the npc wander around*/
   wander() {
+    if (this.isBattler && this.battler.pathfindTarget != null) return;
     if (this.abortMovement || this.wanderFrequency == -1) return;
 
     let elapsedSeconds = performance.now();
@@ -68,6 +79,7 @@ class _Companion {
 
   /** Let the npc go near the player */
   goToPlayer() {
+    if (this.isBattler && this.battler.pathfindTarget != null) return;
     if (this.abortMovement) return;
 
     let elapsedSeconds = performance.now();
@@ -125,6 +137,7 @@ class _Companion {
           if (line.code != 108) { continue; }
           for (let param of line.parameters) {
             let comment = Jomy.Core.utils.parseComment(param);
+            if (comment == null) continue;
             if (comment.getKey() == "FollowFrequency") {
               followFreq = Number(comment.getValue());
             }

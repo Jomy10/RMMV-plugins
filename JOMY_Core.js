@@ -30,6 +30,7 @@ Jomy.Core.utils.genUUID = function() {
 };
 /** Parse comments */
 Jomy.Core.utils.parseComment = function(comment) {
+  if (!comment.contains(":")) return null;
   let command = comment.split(':');
   return new Jomy.Core.class.Comment(command[0].trim(), command[1].trim());
 };

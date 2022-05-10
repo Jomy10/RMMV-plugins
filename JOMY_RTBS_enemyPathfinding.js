@@ -69,7 +69,6 @@ Jomy.RTBS_PathFind.version = 2.0;
     }
   };
 
-
   RTBS_Enemy.prototype.pathfindToPlayer = function() {
     this.pathfindTarget = {x: $gamePlayer.x, y: $gamePlayer.y};
     this.pathfindTargetIsPlayer = true;
@@ -118,33 +117,38 @@ Jomy.RTBS_PathFind.version = 2.0;
     if (nextCall < time) {
       nextCall = time + pathfindingStep; // TODO: dynamically set pathfinding step
 
-      EnemiesLoop:
       for (let enemy of $rtbs_manager.enemies) {
-        if (enemy.pathfindRadius != null) {
-          if (Imported.JOMY_RTBS_NPCFighters) {
-            // Get first close battler or player
-            if (Math.round(Math.random()) == 0) {
-              let isPathfinding = enemy.pathfindToPlayerIfInSight();
-              if (!isPathfinding) {
-                for (let target of $rtbs_manager.battlers) {
-                  if (enemy.pathfindToEventIfInSight(target._event)) {} break;
-                }
-              }
-            } else {
-              let isPathfinding = false;
+        if (enemy.pathfindRadius == null) continue;
+        if (Imported.JOMY_RTBS_NPCFighters) {
+          // Get first close battler or player
+          // TODO: check target enemy is targetting currently first!!
+          if (Math.round(Math.random()) == 0) {
+            let isPathfinding = enemy.pathfindToPlayerIfInSight();
+            if (!isPathfinding && Jomy.Core.utils.isIterable($rtbs_manager.battlers)) {
               for (let target of $rtbs_manager.battlers) {
                 if (enemy.pathfindToEventIfInSight(target._event)) {
+                  enemy.pathfindBattler = target;
+                  break;
+                }
+              }
+            }
+          } else {
+            let isPathfinding = false;
+            if (Jomy.Core.utils.isIterable($rtbs_manager.battlers)) {
+              for (let target of $rtbs_manager.battlers) {
+                if (enemy.pathfindToEventIfInSight(target._event)) {
+                  enemy.pathfindBattler = target;
                   isPathfinding = true;
                   break;
                 }
               }
-              if (!isPathfinding)
-                enemy.pathfindToPlayerIfInSight();
             }
-          } else {
-            // Only check player
-            enemy.pathfindToPlayerIfInSight();
+            if (!isPathfinding)
+              enemy.pathfindToPlayerIfInSight();
           }
+        } else {
+          // Only check player
+          enemy.pathfindToPlayerIfInSight();
         }
 
         // Move enemies
@@ -168,7 +172,7 @@ Jomy.RTBS_PathFind.version = 2.0;
                 break;
               }
             } else if (newDist == 0) {
-              if (this.pathfindTargetIsPlayer) {
+              if (enemy.pathfindTargetIsPlayer) {
                 enemy.event.turnTowardPlayer();
               } else if (enemy.pathfindTarget instanceof Game_Event || enemy.pathfindTarget instanceof Game_Character) {
                 enemy.event.turnTowardCharacter(enemy.pathfindTarget);

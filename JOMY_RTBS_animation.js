@@ -62,9 +62,12 @@ const RTBS_Animation = {
   },
   playEnemyAttackAnimation: function(enemy, type, target) {
     if (type == "player") {
-
-      $gamePlayer.requestAnimation(1);//enemy.attackAnimationId);
+      $gamePlayer.requestAnimation(enemy.attackAnimationId || 1); // TODO: enemy.attackAnimationId);
       // _JOMY_RTBS_PlayAnimationAt($gamePlayer.x, $gamePlayer.y, enemy.attackAnimationId);
+    } else if (type == "battler") {
+      target._event.requestAnimation(enemy.attackAnimationId || 1); // TODO: "
+    } else if (type == "event") {
+      target.requestAnimation(enemy.attackAnimationId || 1); // TODO: "
     }
   }
 };
@@ -116,7 +119,12 @@ function _JOMY_RTBS_PlayAnimationAt(x, y, animationId) {
   let onEnemyAttacks = RTBS_Enemy.prototype._onAttackTarget;
   RTBS_Enemy.prototype._onAttackTarget = function(target) {
     onEnemyAttacks.call(this);
-    RTBS_Animation.playEnemyAttackAnimation(this, "player", null);
+
+    if (target instanceof Game_Actor) {
+      RTBS_Animation.playEnemyAttackAnimation(this, "player", null);
+    } else if (target instanceof RTBS_Battler) {
+      RTBS_Animation.playEnemyAttackAnimation(this, "battler", target);
+    }
   };
 
   // Map load

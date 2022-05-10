@@ -11,7 +11,7 @@
 * @default 500
 *
 * == Required plugins ==
-* Require's Shaz' smart pathfinding plugin to be installed (above this plugin)
+* Requires Shaz' smart pathfinding plugin to be installed (above this plugin)
 * Get it at: https://forums.rpgmakerweb.com/index.php?threads/smart-pathfinding.46761/
 *
 * Requires JOMY_PathfindCore
@@ -27,7 +27,10 @@ class RTBS_Battler {
   constructor(event) {
     this.id = Jomy.Core.utils.genUUID();
     this._event = event;
+    // Time last attacked
     this.lastAttack = 0;
+    // The {RTBS_Enemy} that this battler is following
+    this.pathfindTarget = null;
 
     this.atk = 0;
     this.hp = 10;
@@ -41,10 +44,11 @@ class RTBS_Battler {
 
       for (let param of line.parameters) {
         let comment = Jomy.Core.utils.parseComment(param);
+        if (comment == null) continue;
 
         switch (comment.getKey()) {
           case "Attack":
-            this.atk = Nummber(comment.getValue());
+            this.atk = Number(comment.getValue());
             break;
           case "Health":
             this.hp = Number(comment.getValue());
@@ -55,6 +59,9 @@ class RTBS_Battler {
           case "PathfindRadius":
             this.pathfindRadius = Number(comment.getValue());
             break;
+          case "AttackAnimation":
+            this.attackAnimationId = Number(comment.getValue());
+            break;
           default:
             this._onDefaultCommentKey(comment);
         }
@@ -63,20 +70,26 @@ class RTBS_Battler {
 
     // Add an identifier to the vent that matches the battler's uuid
     eventScript.push(
-      {code: 108, ident: 0, parameters: [`rtbs_battle_id: ${this.id}`]}
+      {code: 108, ident: 0, parameters: [`rtbs_battler_id: ${this.id}`]}
     );
 
     $rtbs_manager.addBattler(this);
+
+    event.rtbs_battler_id = this.id;
   } // end constructor
 
   _onDefaultCommentKey(comment) {}
 
   /** @param target {RTBS_Enemy} - an RTBS_Enemy */
   attackTarget(target, attackTime) {
-    let hp = target.health;
-    target.health = hp - this.atk;
+    // let hp = target.health;
+    // target.health = hp - this.atk;
+    let isTargetDead = target.getsAttacked(this.atk);
     this.lastAttack = attackTime;
     this._onAttackTarget(target);
+    if (isTargetDead) {
+      this.pathfindTarget = null;
+    }
   }
 
   _onAttackTarget(target) {}
@@ -84,21 +97,28 @@ class RTBS_Battler {
   getsAttacked(damage) {
     this.hp -= damage;
 
+    console.log("Battler HP:", this.hp);
+
     if (this.hp <= 0) {
       $gameSelfSwitches.setValue([$gameMap.mapId(), this._event.eventId(), 'A', true]);
       $rtbs_manager.removeBattler(this.id);
       // Clear event's pathfinding
       this._event.clearTarget();
+      return true;
+    } else {
+      return false;
     }
   }
 
   pathfindTo(enemy) {
-    // TODO: new pathfinding (like enemy in enemyPathfind)
-    this._event.setTarget(enemy.event);
+    this.pathfindTarget = enemy;
+  }
+
+  clearPathfinding() {
+    this.pathfindTarget = null;
   }
 
   getFirstCloseEnemy() {
-    // TODO: line of sight blocked views!
     for (let enemy of $rtbs_manager.enemies) {
       if (Jomy.PathFind.checkLineOfSight(this._event.x, this._event.y, this.pathfindRadius, this._event.direction(), Jomy.PathFind.$manager.fieldBlockingPositions, enemy.event.x, enemy.event.y)) {
         return enemy;
@@ -145,6 +165,17 @@ class RTBS_Battler {
   };
 
   // =========================================================================
+  // Battler attack animation
+  // =========================================================================
+
+  let onBattlerAttacks = RTBS_Battler.prototype._onAttackTarget;
+  RTBS_Battler.prototype._onAttackTarget = function(target) {
+    onBattlerAttacks.call(this);
+
+    RTBS_Animation.playEnemyAttackAnimation(this, "event", target.event);
+  };
+
+  // =========================================================================
 
   // Add RTBS battlers
   Jomy.RTBS_Core.RTBS_EventsHandle.set("RTBS-battler", function(event) { $rtbs_manager.addBattler(new RTBS_Battler(event)); });
@@ -157,13 +188,79 @@ class RTBS_Battler {
 
     let time = performance.now();
 
+    // pathfind
     if (nextCall < time && Jomy.Core.utils.isIterable($rtbs_manager.battlers)) {
       nextCall = time + pathfindingStep;
       for (let bat of $rtbs_manager.battlers) {
+        // pathfind: set target
+        if (bat.pathfindRadius == null) continue;
         let firstEnemyInSight = bat.getFirstCloseEnemy();
         if (firstEnemyInSight != null)
           bat.pathfindTo(firstEnemyInSight);
-      }
+
+        // pathfind: move battler
+        let mapW = $gameMap.width();
+        let mapH = $gameMap.height();
+
+        if (bat.pathfindTarget != null) {
+          let distance = Jomy.PathFind.$manager.getDistance({x: bat.pathfindTarget.event.x, y: bat.pathfindTarget.event.y});
+          let enemyDist = distance.get({x: bat._event.x, y: bat._event.y});
+          for (let pos of [
+            {x: bat._event.x + 1, y: bat._event.y},
+            {x: bat._event.x, y: bat._event.y + 1},
+            {x: bat._event.x - 1, y: bat._event.y},
+            {x: bat._event.x, y: bat._event.y - 1}
+          ]) {
+            if (pos.x < 0 || pos.y < 0 || pos.x > mapW || pos.y > mapH) continue;
+            let newDist = distance.get(pos);
+
+            if (newDist != 0 && newDist < enemyDist) {
+              if ($gameMap.eventIdXy(pos.x, pos.y) == 0) { // if position they want to walk in is not an event
+                bat._event.setTarget(null, pos.x, pos.y);
+                break;
+              }
+            } else if (newDist == 0) {
+              bat._event.turnTowardCharacter(bat.pathfindTarget.event);
+            }
+          }
+        }
+      } // endfor battlers
+    }
+
+    // check if battler attacks
+    if (!(SceneManager._scene instanceof Scene_Menu || SceneManager._scene instanceof Scene_Title)) {
+      if (Jomy.Core.utils.isIterable($rtbs_manager.battlers))
+        for (let battler of $rtbs_manager.battlers) {
+          let posCheck = { x: battler._event.x, y: battler._event.y };
+          switch (Jomy.Core.utils.rmmvDirToGameDir(battler._event.direction())) {
+            // up
+            case 0:
+              posCheck.y -= 1;
+              break;
+            // right
+            case 1:
+              posCheck.x += 1;
+              break;
+            // down
+            case 2:
+              posCheck.y += 1;
+              break;
+            // left
+            case 3:
+              posCheck.x -= 1;
+              break;
+          }
+
+          let target = battler.pathfindTarget;
+          if (target == null)
+            break;
+
+          let enemy = target.event;
+          if (enemy.x == posCheck.x && enemy.y == posCheck.y && ((battler.lastAttack + battler.speed) <= time)) {
+            battler.attackTarget(target, time);
+          }
+        }
+      // endif
     }
   }
 })();

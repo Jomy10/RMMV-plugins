@@ -23,7 +23,9 @@
 * - `Speed: <value>`: The attack speed of the enemy in miliseconds (e.g. 1500 = 1.5 seconds)
 *
 * === Handle enemy death ===
-* Add another event page to the enemy event and the Self Switch condition to A
+* Add another event page to the enemy event and the Self Switch condition to A.
+*
+* NOTE: The enemy's event page should always be the first event page
 */
 
 var Imported = Imported || {};
@@ -39,7 +41,7 @@ class RTBS_Enemy {
     this.lastAttack = 0;
   }
 
-  /** Called when enemy attacks */
+  /** Called when enemy attacks a player */
   attackTarget(target, attackTime) {
     // Player
     let playerHP = target.hp;
@@ -49,14 +51,24 @@ class RTBS_Enemy {
     this._onAttackTarget(target);
   }
 
+  /** Called when enemy attacks a battler */
+  attackEventTarget(target, attackTime) {
+    let targetDead = target.getsAttacked(this.attack);
+    this.lastAttack = attackTime;
+    this._onAttackTarget(target);
+    if (targetDead && Imported.Jomy_RTBS_enemyPathfind) {
+      this.pathfindBattler = null;
+    }
+  }
+
   /** Meant to be overwritten */
   _onAttackTarget(target) {}
 
   /** Called when the enemy is attacked
    * @param damage {number} - The amount of damage the enemy should take
+   * @return {boolean} - True if the enemy is dead
    */
   getsAttacked(damage) {
-    console.log(damage);
     this.health -= damage;
     console.log("Enemy HP:", this.health);
     if (this.health <= 0) {
@@ -65,6 +77,9 @@ class RTBS_Enemy {
       // Clear event's pathfinding
       if (Imported.Jomy_RTBS_enemyPathfind)
         this.event.clearTarget();
+      return true;
+    } else {
+      return false;
     }
   }
 }
@@ -100,6 +115,7 @@ class RTBS_Manager {
         if (line.code != 108) { continue; }
         for (let param of line.parameters) {
           let comment = Jomy.Core.utils.parseComment(param);
+          if (comment == null) continue;
           if (comment.getKey() == "rtbs_enemy_id" && comment.getValue() == uuid) {
             return _event;
           }
@@ -123,6 +139,7 @@ class RTBS_Manager {
         if (line.code != 108) { continue; }
         for (let param of line.parameters) {
           let comment = Jomy.Core.utils.parseComment(param);
+          if (comment == null) continue;
           if (comment.getKey() == "rtbs_enemy_id") {
             let enemy_uuid = comment.getValue();
             let enemy = this.findEnemyWithUUID(enemy_uuid);
@@ -150,6 +167,8 @@ class RTBS_Manager {
   // TODO: move to constructor of RTBS_Enemy
   /** Parse enemy event */
   getEnemy(_event) {
+    if (_event._pageIndex != 0) return;
+
     let event = _event.event();
     let eventScript = event.pages[0].list;
 
@@ -165,7 +184,8 @@ class RTBS_Manager {
       if (line.code != 108) { continue; }
       for (let param of line.parameters) {
         let comment = Jomy.Core.utils.parseComment(param);
-
+        if (comment == null) continue;
+        
         switch (comment.getKey()) {
           case "Attack":
             attack = Number(comment.getValue());
@@ -187,6 +207,7 @@ class RTBS_Manager {
     enemy.speed = speed;
 
     // Add an identifier to the event that matches the enemy's uuid
+    console.log("Adding enemy", enemy);
     eventScript.push(
       {code: 108, ident: 0, parameters: [`rtbs_enemy_id: ${id}`]}
     )
@@ -260,6 +281,7 @@ Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
     for (let _event of events) {
       let event = _event.event();
       // Handle enemy events
+      console.log(event.meta);
       for (let eventHandle of Jomy.RTBS_Core.RTBS_EventsHandle) {
         if (event.meta[eventHandle[0]])
           eventHandle[1](_event);
@@ -276,7 +298,7 @@ Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
       let elapsedSeconds = performance.now();
 
       // Check if enemy attacks
-      $rtbs_manager.enemies.forEach((enemy) => {
+      for (let enemy of $rtbs_manager.enemies) {
         let positionCheck = { x: enemy.event.x, y: enemy.event.y };
         switch ( Jomy.Core.utils.rmmvDirToGameDir(enemy.event._direction) ) {
           // up
@@ -297,11 +319,18 @@ Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
             break;
         }
 
-        if ($gamePlayer.x == positionCheck.x && $gamePlayer.y == positionCheck.y && ((enemy.lastAttack + enemy.speed) <= elapsedSeconds)) {
-          console.log("attacking");
-          enemy.attackTarget($rtbs_player, elapsedSeconds);
+        if (enemy.pathfindTargetIsPlayer) {
+          if ($gamePlayer.x == positionCheck.x && $gamePlayer.y == positionCheck.y && ((enemy.lastAttack + enemy.speed) <= elapsedSeconds)) {
+            enemy.attackTarget($rtbs_player, elapsedSeconds);
+          }
+        } else {
+          let battler = enemy.pathfindBattler;
+          if (battler == null) return;
+          if (battler._event.x == positionCheck.x && battler._event.y == positionCheck.y && ((enemy.lastAttack + enemy.speed) <= elapsedSeconds)) {
+            enemy.attackEventTarget(battler, elapsedSeconds);
+          }
         }
-      });
+      }
 
       // Check if player is dead
       if ($rtbs_player.hp == 0) {
