@@ -19,6 +19,9 @@
 * Place them above this plugin
 */
 
+var Imported = Imported || {};
+Imported.JOMY_RTBS_NPCFighters = true;
+
 class RTBS_Battler {
   /** @param event {Game_Event} - The Battler event */
   constructor(event) {
@@ -96,9 +99,8 @@ class RTBS_Battler {
 
   getFirstCloseEnemy() {
     // TODO: line of sight blocked views!
-    // TODO: move line of sight to pathfind core
     for (let enemy of $rtbs_manager.enemies) {
-      if (Jomy.PathFind.isPointInCircle(this._event.x, this._event.y, this.pathfindRadius, enemy.event.x, enemy.event.y)) {
+      if (Jomy.PathFind.checkLineOfSight(this._event.x, this._event.y, this.pathfindRadius, this._event.direction(), Jomy.PathFind.$manager.fieldBlockingPositions, enemy.event.x, enemy.event.y)) {
         return enemy;
       }
     }
@@ -144,22 +146,8 @@ class RTBS_Battler {
 
   // =========================================================================
 
-  let onMapLoaded = Scene_Map.prototype.onMapLoaded;
-  Scene_Map.prototype.onMapLoaded = function() {
-    onMapLoaded.call(this);
-
-    // TODO: add as an extension of RTBS, so itt doesn't have to loop twice
-    // (once for enemies nad once for battlers)
-    // Get all events
-    let events = $gameMap.events();
-    for (let event of events) {
-      let _event = event.event();
-      // Handle enemy events
-      if (_event.meta["RTBS-battler"] == true) {
-        $rtbs_manager.addBattler(new RTBS_Battler(event));
-      }
-    }
-  }
+  // Add RTBS battlers
+  Jomy.RTBS_Core.RTBS_EventsHandle.set("RTBS-battler", function(event) { $rtbs_manager.addBattler(new RTBS_Battler(event)); });
 
   let nextCall = 0;
   // Game loop

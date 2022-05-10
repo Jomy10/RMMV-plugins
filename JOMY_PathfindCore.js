@@ -3,6 +3,16 @@
 * @plugindesc Pathfinding algorithm core
 * <be.jonaseveraert.mv.pathfindCore>
 *
+* @param Blocking Tile Tag
+* @desc every grid tile taggd with this region tag will block an enemy's view
+* @type number
+* @default 13
+*
+* @param Blocking Terrain Tag
+* @desc Every tile with this terrain tag will block an enemy's view
+* @type number
+* @default 1
+*
 * @param Calculate paths on map load
 * @desc Might cause longer initial load on maps, but better performance afterwards
 * @type boolean
@@ -35,7 +45,10 @@ Jomy.PathFind = {};
 class _Jomy_PathFindManager {
   constructor() {
     this.distances = new JOMY_VecMap();
-    this.blockedPositions = new Set(); // TODO
+    // A set of positions that can't be walked on
+    this.blockedPositions = new Set();
+    // An array of positions that block the line of sight
+    this.fieldBlockingPositions = [];
   }
 
   /** Get the distance map of a location
@@ -125,6 +138,8 @@ Jomy.PathFind.$manager = new _Jomy_PathFindManager();
     return p.description.contains('<be.jonaseveraert.mv.pathfindCore>') && p.status;
   })[0];
 
+  let blockingRegionTag = Number(plugin.parameters["Blocking Tile Tag"]);
+  let blockingTerrainTag = Number(plugin.parameters["Blocking Terrain Tag"]);
   let calculateOnMapLoad = Boolean(plugin.parameters["Calculate paths on map load"].toUpperCase() == "TRUE"); // TODO: a way to set this per map
 
   // On map load
@@ -132,13 +147,22 @@ Jomy.PathFind.$manager = new _Jomy_PathFindManager();
   Scene_Map.prototype.onMapLoaded = function() {
     onMapLoaded.call(this);
 
-    // Get all objects that can't be walked on
     Jomy.PathFind.$manager.blockedPositions = new Set();
     Jomy.PathFind.$manager.distances = new JOMY_VecMap();
+    Jomy.PathFind.$manager.fieldBlockingPositions = [];
 
     for (let x = 0; x < $gameMap.width(); x++) {
       for (let y = 0; y < $gameMap.height(); y++) {
-        if (!$gamePlayer.isMapPassable(x, y, 8)) {
+        if ($gameMap.terrainTag(x, y) == blockingTerrainTag || $gameMap.regionId(x, y) == blockingRegionTag) {
+          Jomy.PathFind.$manager.fieldBlockingPositions.push({x: x, y: y});
+        }
+      }
+    }
+
+    // Get all objects that can't be walked on
+    for (let x = 0; x < $gameMap.width(); x++) {
+      for (let y = 0; y < $gameMap.height(); y++) {
+        if (!$gamePlayer.isMapPassable(x, y, 8)) { // TODO: change is map passable to custom function (ignore event, only tiles, unless event marked with permanent)
           Jomy.PathFind.$manager.blockedPositions.add({x: x, y: y});
         }
       }
@@ -157,7 +181,7 @@ Jomy.PathFind.$manager = new _Jomy_PathFindManager();
 })();
 
 // ============================================================================
-// Pathfinding field of view functions
+// Pathfinding line of sight functions
 // ============================================================================
 
 /** Check if a point lies in a circle
@@ -230,4 +254,19 @@ Jomy.PathFind.isPointInFrontOf = function(x, y, dir, a, b) {
 Jomy.PathFind.isPointCloseTo = function(x, y, a, b) {
   return ((x + 1) == a || (x - 1 == a) || (x == a))
     && ((y + 1) == b || (y - 1) == b || (y == b));
+};
+
+/** Check line of sight from (x,y) to (a,b)
+ * @param radius {number} - The radius in which to check for if (a,b) is in sight
+ * @param direction {number} - The direction the entity at (x,y) is facing (RMMV direction)
+ * @param wallObjects {{x: number, y: number}} - Contains the coordinates of the objects that might block the view
+ * @returns {boolean} - Wheter (a, b) is in the line of sight of (x, y)
+ */
+Jomy.PathFind.checkLineOfSight = function(x, y, radius, direction, wallObjects, a, b) {
+  return Jomy.PathFind.isPointInCircle(x, y, radius, a, b)
+  && (
+    Jomy.PathFind.isPointInFrontOf(x, y, direction, a, b, wallObjects)
+    || Jomy.PathFind.isPointCloseTo(x, y, a, b)
+  )
+  && !Jomy.PathFind.isPointBlockedByObjects(x, y, a, b, radius * 4, wallObjects);
 };

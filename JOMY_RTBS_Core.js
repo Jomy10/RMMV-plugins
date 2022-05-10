@@ -29,6 +29,9 @@
 var Imported = Imported || {};
 Imported.JOMY_rtbs_core = true;
 
+var Jomy = Jomy || {};
+Jomy.RTBS_Core = {version: 1.0};
+
 class RTBS_Enemy {
   constructor(id, event) {
     this.id = id;
@@ -202,6 +205,8 @@ function reset_rtbs() {
   $rtbs_manager = new RTBS_Manager();
 }
 
+Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
+
 // init
 (function() {
   // Check requirements
@@ -226,6 +231,9 @@ function reset_rtbs() {
   Jomy.InputManager.subTrigger(plugin.parameters["Attack button"], () => {
     $rtbs_manager.playerAttacks();
   });
+
+  // RTBS_Events: enemies
+  Jomy.RTBS_Core.RTBS_EventsHandle.set("RTBS-enemy", function(event) { $rtbs_manager.getEnemy(event); });
 
   // On map load
   let map = Scene_Map.prototype.onMapLoaded;
@@ -252,8 +260,9 @@ function reset_rtbs() {
     for (let _event of events) {
       let event = _event.event();
       // Handle enemy events
-      if (event.meta["RTBS-enemy"] == true) {
-        $rtbs_manager.getEnemy(_event);
+      for (let eventHandle of Jomy.RTBS_Core.RTBS_EventsHandle) {
+        if (event.meta[eventHandle[0]])
+          eventHandle[1](_event);
       }
     }
   };
