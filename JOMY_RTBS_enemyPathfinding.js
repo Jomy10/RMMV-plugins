@@ -46,7 +46,7 @@ Jomy.RTBS_PathFind.version = 2.0;
   let blockingTerrainTag = Number(plugin.parameters["Blocking Terrain Tag"]);
   let pathfindingStep = Number(plugin.parameters["Pathfinding step"]);
 
-  let wallObjects = [];
+  let wallObjects = []; // TODO: move to pathfindCore
 
   // Change of map
   // On map load
@@ -155,7 +155,7 @@ Jomy.RTBS_PathFind.version = 2.0;
             if (pos.x < 0 || pos.y < 0 || pos.x > mapW || pos.y > mapH) continue;
             let newDist = distance.get(pos)
             if (newDist != 0 && newDist < enemyDist) {
-              if ($gameMap.eventIdXy(pos.x, pos.y) == 0) {
+              if ($gameMap.eventIdXy(pos.x, pos.y) == 0) { // if position they want to walk in is not an event
                 enemy.event.setTarget(null, pos.x, pos.y);
                 break;
               }
@@ -163,7 +163,7 @@ Jomy.RTBS_PathFind.version = 2.0;
               enemy.event.turnTowardPlayer();
             }
           }
-        }
+        } // end enemy pathfind
       } // endfor enemies
     } // endif
   }

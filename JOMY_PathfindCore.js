@@ -24,6 +24,9 @@
 
 // ============================================================================
 
+var Imported = Imported || {};
+Imported.JOMY_PathfindCore = true;
+
 var Jomy = Jomy || {};
 Jomy.PathFind = {};
 

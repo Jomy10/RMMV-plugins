@@ -46,10 +46,12 @@ class RTBS_Enemy {
     this._onAttackTarget(target);
   }
 
-  /** Meant to be ovrwritten */
+  /** Meant to be overwritten */
   _onAttackTarget(target) {}
 
-  /** Called when the enemy is attacked */
+  /** Called when the enemy is attacked
+   * @param damage {number} - The amount of damage the enemy should take
+   */
   getsAttacked(damage) {
     console.log(damage);
     this.health -= damage;
@@ -137,10 +139,12 @@ class RTBS_Manager {
 
   /** Method meant to be overwritten by extension plugins
    *  Called when the player succesfully lands an attack
+   *  @param target {Game_Event} - the target of the attack
    */
   _onPlayerAttacks(target) {}
   _onPlayerMissed(time) {}
 
+  // TODO: move to constructor of RTBS_Enemy
   /** Parse enemy event */
   getEnemy(_event) {
     let event = _event.event();

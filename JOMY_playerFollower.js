@@ -24,6 +24,8 @@ Jomy.playerFollower.version = 1.00;
 
 //===================================================================
 
+// TODO: player follower should clip through walls!
+
 Jomy.playerFollower.eventTags = ["<player-follower>"];
 
 /// gets the events indicated with "<player-follower>" in the notes

@@ -54,7 +54,7 @@ class __BulletManager {
     }
   }
 
-  /** Calculate new position and draw buller*/
+  /** Calculate new position and draw bullet */
   calcAndDrawAndDamage() {
     for (let bullet of this.bullets) {
       switch (bullet.dir) {

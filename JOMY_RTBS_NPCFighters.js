@@ -4,6 +4,12 @@
 * @help
 * Mark an event with <RTBS-battler> in its note to make them hostile towards enemies.
 *
+* @param Pathfinding step
+* @desc
+* The amount of miliseconds to wait before checking for a new path to a target
+* @type number
+* @default 500
+*
 * == Required plugins ==
 * Require's Shaz' smart pathfinding plugin to be installed (above this plugin)
 * Get it at: https://forums.rpgmakerweb.com/index.php?threads/smart-pathfinding.46761/
@@ -14,6 +20,7 @@
 */
 
 class RTBS_Battler {
+  /** @param event {Game_Event} - The Battler event */
   constructor(event) {
     this.id = Jomy.Core.utils.genUUID();
     this._event = event;
@@ -23,11 +30,11 @@ class RTBS_Battler {
     this.hp = 10;
     this.speed = 1000;
 
-    let eventScript = event.pages[0].list;
+    let eventScript = event.event().pages[0].list;
 
     // Get comments
     for (let line of eventScript) {
-      if (line.core != 108) continue;
+      if (line.code != 108) continue;
 
       for (let param of line.parameters) {
         let comment = Jomy.Core.utils.parseComment(param);
@@ -61,7 +68,7 @@ class RTBS_Battler {
 
   _onDefaultCommentKey(comment) {}
 
-  /** target: an RTBS_Enemy */
+  /** @param target {RTBS_Enemy} - an RTBS_Enemy */
   attackTarget(target, attackTime) {
     let hp = target.health;
     target.health = hp - this.atk;
@@ -83,14 +90,15 @@ class RTBS_Battler {
   }
 
   pathfindTo(enemy) {
-    // TODO: new pathfinding (like enemie in enemyPathfind)
+    // TODO: new pathfinding (like enemy in enemyPathfind)
     this._event.setTarget(enemy.event);
   }
 
   getFirstCloseEnemy() {
+    // TODO: line of sight blocked views!
+    // TODO: move line of sight to pathfind core
     for (let enemy of $rtbs_manager.enemies) {
-      // TODO: field of view
-      if (Jomy.PathFind.isPointInCircle(this._event.x, this._event.y, this.pathfindRadius, enemy.x, enemy.y)) {
+      if (Jomy.PathFind.isPointInCircle(this._event.x, this._event.y, this.pathfindRadius, enemy.event.x, enemy.event.y)) {
         return enemy;
       }
     }
@@ -99,21 +107,25 @@ class RTBS_Battler {
 
 (function() {
   if (!Imported.JOMY_Core) {
-    console.error("Missing import: Jomy_Core");
+    console.error("Missing import: JOMY_Core");
   }
   if (!Imported.Jomy_RTBS_enemyPathfind) {
-    console.error("Missing import: Jomy_RTBS_enemyPathfind");
+    console.error("Missing import: JOMY_RTBS_enemyPathfind");
+  }
+  if (!Imported.JOMY_PathfindCore) {
+    console.error("Missing import: JOMY_PathfindCore");
   }
 
-  // Additions
-  let rtbsManConstr = RTBS_Manager.prototype.constructor;
-  RTBS_Manager.prototype.constructor = function() {
-    rtbsManConstr.call(this);
+  let plugin = $plugins.filter(function(p) {
+    return p.description.contains('<be.jonaseveraert.mv.RTBS.pathfind>') && p.status;
+  })[0];
+  let pathfindingStep = Number(plugin.parameters["Pathfinding step"]);
 
-    this.battlers = [];
-  };
+  // =========================================================================
 
   RTBS_Manager.prototype.addBattler = function(battler) {
+    if (this.battlers == null)
+      this.battlers = [];
     this.battlers.push(battler);
   };
 
@@ -130,6 +142,25 @@ class RTBS_Battler {
     }
   };
 
+  // =========================================================================
+
+  let onMapLoaded = Scene_Map.prototype.onMapLoaded;
+  Scene_Map.prototype.onMapLoaded = function() {
+    onMapLoaded.call(this);
+
+    // TODO: add as an extension of RTBS, so itt doesn't have to loop twice
+    // (once for enemies nad once for battlers)
+    // Get all events
+    let events = $gameMap.events();
+    for (let event of events) {
+      let _event = event.event();
+      // Handle enemy events
+      if (_event.meta["RTBS-battler"] == true) {
+        $rtbs_manager.addBattler(new RTBS_Battler(event));
+      }
+    }
+  }
+
   let nextCall = 0;
   // Game loop
   let update = Window_Base.prototype.update;
@@ -138,11 +169,12 @@ class RTBS_Battler {
 
     let time = performance.now();
 
-    if (nextCall < time) {
-      nextCall = time + 500;
+    if (nextCall < time && Jomy.Core.utils.isIterable($rtbs_manager.battlers)) {
+      nextCall = time + pathfindingStep;
       for (let bat of $rtbs_manager.battlers) {
-        bat.getFirstCloseEnemy();
-        // TODO: pathfind to enemy
+        let firstEnemyInSight = bat.getFirstCloseEnemy();
+        if (firstEnemyInSight != null)
+          bat.pathfindTo(firstEnemyInSight);
       }
     }
   }
