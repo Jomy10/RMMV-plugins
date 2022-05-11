@@ -122,7 +122,6 @@ Jomy.RTBS_PathFind.version = 2.0;
       for (let enemy of $rtbs_manager.enemies) {
         if (enemy.pathfindRadius == null) continue;
         if (Imported.JOMY_RTBS_NPCFighters) {
-          console.log("->", enemy.pathfindTarget);
           if (enemy.pathfindTarget == null) {
             // Get first close battler or player
             // TODO: check target enemy is targetting currently first!!

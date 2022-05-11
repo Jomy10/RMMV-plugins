@@ -82,12 +82,17 @@
 
         let hp = $rtbs_player.hp;
         let mhp = $rtbs_player.mhp;
-        // let stam = $gamePlayer.stam; <- todo
+        let stam = $gamePlayer.stamina;
         // TODO: equipment rendering
 
         let percHpLeft = hp / mhp;
         if (percHpLeft != 1) {
           setHudHp(percHpLeft);
+        }
+
+        let percStamLeft = stam / 100;
+        if (percStamLeft != 1) {
+          setHudStam(percStamLeft);
         }
       }
   };
