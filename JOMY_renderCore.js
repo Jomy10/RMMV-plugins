@@ -23,7 +23,7 @@ Jomy.Renderer = new class {
   /** Add a sprite to the screen and index
   * @param id {number} - unique id to reference the sprite by
   * @param location {string} - containing the location of the image in the base folder
-  *                  e.g. "img/battle/bullet.png"
+  *                  e.g. "img/battle/bullet"
   * @param position { x: number, y: number } -
   * @param callback {function} - called when the sprite has been loaded
   */

@@ -62,17 +62,21 @@ const RTBS_Animation = {
   },
   playEnemyAttackAnimation: function(enemy, type, target) {
     if (type == "player") {
-      $gamePlayer.requestAnimation(enemy.attackAnimationId || 1); // TODO: enemy.attackAnimationId);
+      $gamePlayer.requestAnimation(enemy.attackAnimationId || 1);
       // _JOMY_RTBS_PlayAnimationAt($gamePlayer.x, $gamePlayer.y, enemy.attackAnimationId);
     } else if (type == "battler") {
-      target._event.requestAnimation(enemy.attackAnimationId || 1); // TODO: "
+      target._event.requestAnimation(enemy.attackAnimationId || 1);
     } else if (type == "event") {
-      target.requestAnimation(enemy.attackAnimationId || 1); // TODO: "
+      target.requestAnimation(enemy.attackAnimationId || 1);
     }
   }
 };
 
 function _JOMY_RTBS_PlayAnimationAt(x, y, animationId) {
+  if (Jomy.RTBS_Animation.$animationEvent == null) {
+    console.error("No event for playing animations found");
+    return;
+  }
   Jomy.RTBS_Animation.$animationEvent._x = x;
   Jomy.RTBS_Animation.$animationEvent._y = y;
   Jomy.RTBS_Animation.$animationEvent.requestAnimation(animationId);
@@ -137,9 +141,14 @@ function _JOMY_RTBS_PlayAnimationAt(x, y, animationId) {
             let event = $gameMap.event(eventId);
 
             if (event == null) continue;
-            let _event = event.event();
-            if (_event.note.contains("<RTBS-setup>")) {
-              return event;
+            try {
+              let _event = event.event();
+
+              if (_event.note.contains("<RTBS-setup>")) {
+                return event;
+              }
+            } catch {
+              console.error("RTBS-setup is not present");
             }
           }
         }

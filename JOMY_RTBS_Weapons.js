@@ -26,6 +26,8 @@
 * - `RTBS-ranged-speed: <value>`: The speed of the bullet
 * - `RTBS-ranged-sprite: <value>`: The sprite of the bullet. Default is "RTBS_Combat/bullet",
 *   which is located in "img/RTBS_Combat/bullet.png"
+* - `RTBS-ranged-ammo: <value>`: The item id of the ammo that should be used for
+*   the ranged weapon.
 * - `RTBS-durability: <value>`: Add a durability to non-ranged weapons
 *
 * The attack animation is the selected attack animation, + the 3 attack animations
@@ -63,8 +65,8 @@ class RTBS_Weapon {
     this.ranged_piercingCount = 1;
     this.ranged_speed = 1;
     this.ranged_sprite = "RTBS_Combat/bullet";
+    this.ranged_ammoId = null;
     this.durabilityEnabled = false;
-    // this.durability = 999;
     this._weapon.durability = 999;
     this._weapon.mDurability = 999;
     this._parseWeaponNotes();
@@ -97,6 +99,9 @@ class RTBS_Weapon {
               this.durabilityEnabled = true;
               this._weapon.durability = Number(comment.getValue());
               this._weapon.mDurability = Number(comment.getValue());
+              break;
+            case "RTBS-ranged-ammo":
+              this.ranged_ammoId = Number(comment.getValue());
               break;
           } // end switch comment
       } // end switch note
@@ -134,6 +139,25 @@ class RTBS_Weapon {
     $gameParty._weapons[weaponId] -= 1;
     if ($gameParty._weapons[weaponId] <= 0) {
       delete $gameParty._weapons[weaponId];
+    }
+    // TODO: play breaking sound
+  }
+
+  /** Uses 1 ammo for this weapon and returns wheter it was successful */
+  canUseRanged() {
+    if (this.ranged_ammoId == null) true;
+    let itemCount = $gameParty._items[this.ranged_ammoId];
+
+    if (itemCount != null && itemCount > 0) {
+      // remove item
+      $gameParty._items[this.ranged_ammoId] -= 1;
+      if ($gameParty._items[this.ranged_ammoId] <= 0) {
+        delete $gameParty._items[this.ranged_ammoId];
+      }
+
+      return true;
+    } else {
+      return false;
     }
   }
 

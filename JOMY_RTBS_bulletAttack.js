@@ -38,7 +38,11 @@ class __BulletManager {
     Jomy.Renderer.renderSprite(
       id,
       "img/RTBS_Combat/bullet",
-      pos);
+      pos,
+      () => {
+        console.log("loaded!", this);
+        this.bullets[this.bullets.length-1]._isRendered = true;
+      });
 
     AudioManager.playSe({name: this.bulletSound, pan: 0, pitch: 100, volume: 100});
 
@@ -57,6 +61,7 @@ class __BulletManager {
   /** Calculate new position and draw bullet */
   calcAndDrawAndDamage() {
     for (let bullet of this.bullets) {
+      if (!bullet._isRendered) continue;
       switch (bullet.dir) {
         case 0:
           bullet.y -= bullet.speed;
@@ -123,16 +128,20 @@ class __BulletManager {
 
       if (currentRangedWeapon == null) return;
 
-      this.addBullet(
-        {x: $gamePlayer.screenX(), y: $gamePlayer.screenY()}, // pos
-        Jomy.Core.utils.rmmvDirToGameDir($gamePlayer.direction()), // dir
-        currentRangedWeapon.ranged_speed, // speed
-        currentRangedWeapon.atk, // damage
-        currentRangedWeapon.ranged_piercingCount, // piercingCount
-        currentRangedWeapon.ranged_alerts, // alerts enemies
-        {x: $gamePlayer.x, y: $gamePlayer.y} // alertPosition (game tiles)
-      );
-      console.log(this.bullets);
+      if (currentRangedWeapon.canUseRanged()) {
+        this.addBullet(
+          {x: $gamePlayer.screenX(), y: $gamePlayer.screenY()}, // pos
+          Jomy.Core.utils.rmmvDirToGameDir($gamePlayer.direction()), // dir
+          currentRangedWeapon.ranged_speed, // speed
+          currentRangedWeapon.atk, // damage
+          currentRangedWeapon.ranged_piercingCount, // piercingCount
+          currentRangedWeapon.ranged_alerts, // alerts enemies
+          {x: $gamePlayer.x, y: $gamePlayer.y} // alertPosition (game tiles)
+        );
+        console.log(this.bullets);
+      } else {
+        // Play sound (empty gun, or nothing with bow and arrow)
+      }
     });
   };
 }
