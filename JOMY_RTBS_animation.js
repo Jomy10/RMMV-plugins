@@ -86,9 +86,6 @@ function _JOMY_RTBS_PlayAnimationAt(x, y, animationId) {
   if (!Imported.JOMY_playerFollower) {
     err("Unimported: JOMY_playerFollower");
   }
-  if (!Imported.GALV_EventSpawner) {
-    err("Unimported: GALV_EventSpawner");
-  }
   */
 
   // Collect enemy comments
@@ -132,7 +129,7 @@ function _JOMY_RTBS_PlayAnimationAt(x, y, animationId) {
   Scene_Map.prototype.onMapLoaded = function() {
     mapLoaded.call(this);
 
-    if (!(SceneManager._scene instanceof Scene_Menu || SceneManager._scene instanceof Scene_Title)) { // not in a menu (including main menu)
+    if (!(Jomy.Core.utils.isInMenu())) { // not in a menu (including main menu)
       // Get the setup event
       Jomy.RTBS_Animation.$animationEvent = function() {
         if ($dataMap != null) {

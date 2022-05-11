@@ -7,6 +7,11 @@
 * @type text
 * @default e
 *
+* @param HPBar shown default
+* @desc Show hp bar by default. Only works when JOMY_RTBS_HealthBar is insalled
+* @type boolean
+* @default false
+*
 * @help
 * = Setup =
 * Add an event with an id of "<RTBS-setup>" to every map in your game.
@@ -49,7 +54,7 @@ class RTBS_Enemy {
     this.health = 0;
     this.maxHp = 0;
     this.speed = 1000;
-    this.hpBarShown = false;
+    this.hpBarShown = $rtbs_manager.defaults.hpBarShown; //
 
     // Get comments
     for (let line of eventScript) {
@@ -150,6 +155,9 @@ class RTBS_Enemy {
 class RTBS_Manager {
   constructor() {
     this.enemies = [];
+    this.defaults = {
+      hpBarShown: false
+    };
   }
 
   addEnemy(enemy) {
@@ -271,6 +279,7 @@ Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
   Jomy.InputManager.subTrigger(plugin.parameters["Attack button"], () => {
     $rtbs_manager.playerAttacks();
   });
+  $rtbs_manager.defaults.hpBarShown = (plugin.parameters["HPBar shown default"].toLowerCase() == "true");
 
   // RTBS_Events: enemies
   Jomy.RTBS_Core.RTBS_EventsHandle.set("RTBS-enemy", function(event) { $rtbs_manager.getEnemy(event); });
@@ -291,7 +300,7 @@ Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
         if ($rtbs_player.rtbs.equippedWeapon == null)
           return $rtbs_player.atk;
         else
-          return $rtbs_player.rtbs.equippedWeapon.atk;
+          return $rtbs_player.rtbs.equippedWeapon.use();
       }
     };
 
@@ -312,7 +321,7 @@ Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
   Window_Base.prototype.update = function() {
     update.call(this);
 
-    if (!(SceneManager._scene instanceof Scene_Menu || SceneManager._scene instanceof Scene_Title)) { // not in a menu (including main menu)
+    if (!(Jomy.Core.utils.isInMenu())) { // not in a menu (including main menu)
       let elapsedSeconds = performance.now();
 
       // Check if enemy attacks

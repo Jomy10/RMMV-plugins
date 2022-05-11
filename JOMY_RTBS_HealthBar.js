@@ -44,8 +44,9 @@ let $rtbs_hpManager = new class {
   }
 
   removeBar(barId) {
-    // TODO: addd to separate list to fade out
+    // TODO: add to separate list to fade out
     let bar = this.bars.get(barId);
+    if (bar == null) return; // Don't remove if there is no hp bar
 
     Jomy.Renderer.removeSprite(bar._spriteFillId);
     Jomy.Renderer.removeSprite(bar._spriteFrameId);
@@ -59,6 +60,7 @@ let $rtbs_hpManager = new class {
       let hp = bar.health();
       let mhp = bar.maxHealth;
 
+      // TODO: if bar._isSpriteRendered && hp = mhp, then remove the sprite! (healing)
       if (hp == mhp) continue;
 
       if (!Jomy.Renderer.spriteExists(bar._spriteFillId)) {

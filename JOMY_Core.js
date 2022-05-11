@@ -57,3 +57,7 @@ Jomy.Core.utils.rmmvDirToGameDir = function(rmmvDir) {
     case 6: return 1; // right
   }
 }
+
+Jomy.Core.utils.isInMenu = function() {
+  return SceneManager._scene instanceof Scene_MenuBase;
+}

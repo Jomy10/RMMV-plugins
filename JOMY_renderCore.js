@@ -21,10 +21,11 @@ Jomy.Renderer = new class {
   }
 
   /** Add a sprite to the screen and index
-  * @param id: unique id to reference the sprite by
-  * @param location: string containing the location of the image in the base folder
+  * @param id {number} - unique id to reference the sprite by
+  * @param location {string} - containing the location of the image in the base folder
   *                  e.g. "img/battle/bullet.png"
-  * @param position: { x: number, y: number }
+  * @param position { x: number, y: number } -
+  * @param callback {function} - called when the sprite has been loaded
   */
   renderSprite(id, location, position, callback) {
     let bitmap = ImageManager.loadBitmap("", location);

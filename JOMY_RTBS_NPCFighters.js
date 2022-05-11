@@ -238,7 +238,7 @@ class RTBS_Battler {
     }
 
     // check if battler attacks
-    if (!(SceneManager._scene instanceof Scene_Menu || SceneManager._scene instanceof Scene_Title)) {
+    if (!(Jomy.Core.utils.isInMenu())) {
       if (Jomy.Core.utils.isIterable($rtbs_manager.battlers))
         for (let battler of $rtbs_manager.battlers) {
           let posCheck = { x: battler._event.x, y: battler._event.y };

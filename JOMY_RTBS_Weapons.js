@@ -26,6 +26,7 @@
 * - `RTBS-ranged-speed: <value>`: The speed of the bullet
 * - `RTBS-ranged-sprite: <value>`: The sprite of the bullet. Default is "RTBS_Combat/bullet",
 *   which is located in "img/RTBS_Combat/bullet.png"
+* - `RTBS-durability: <value>`: Add a durability to non-ranged weapons
 *
 * The attack animation is the selected attack animation, + the 3 attack animations
 * that follow (one for each direction the player is facing in).
@@ -61,8 +62,12 @@ class RTBS_Weapon {
     this.ranged_alerts = false;
     this.ranged_piercingCount = 1;
     this.ranged_speed = 1;
-    this.ranged_sprite = "RTBS_Combat/bullet"
-    this._parseWeaponNotes()
+    this.ranged_sprite = "RTBS_Combat/bullet";
+    this.durabilityEnabled = false;
+    // this.durability = 999;
+    this._weapon.durability = 999;
+    this._weapon.mDurability = 999;
+    this._parseWeaponNotes();
   }
 
   _parseWeaponNotes() {
@@ -88,8 +93,47 @@ class RTBS_Weapon {
             case "RTBS-ranged-sprite":
               this.ranged_sprite = Number(comment.getValue());
               break;
+            case "RTBS-durability":
+              this.durabilityEnabled = true;
+              this._weapon.durability = Number(comment.getValue());
+              this._weapon.mDurability = Number(comment.getValue());
+              break;
           } // end switch comment
       } // end switch note
+    }
+  }
+
+  durability() {
+    return this._weapon.durability;
+  }
+
+  setDurability(val) {
+    this._weapon.durability = val;
+  }
+
+  /** Retrieve the weapon's attack. Also decreases its durability
+   * @returns {number}
+   */
+  use() {
+    if (this.durabilityEnabled) {
+      this._weapon.durability -= 1;
+      console.log(this.durability());
+      if (this.durability() <= 0) {
+        console.log("Weapon broke!");
+        this.break();
+      }
+    }
+    return this.atk;
+  }
+
+  /** Called when this weapon breaks */
+  break() {
+    this._weapon.durability = this._weapon.mDurability;
+    let weaponId = $rtbs_player.rtbs.equippedWeapon._weapon.id;
+    $gameActors.actor(1).changeEquip(0, $dataWeapons[0]); // unequip
+    $gameParty._weapons[weaponId] -= 1;
+    if ($gameParty._weapons[weaponId] <= 0) {
+      delete $gameParty._weapons[weaponId];
     }
   }
 
@@ -119,7 +163,7 @@ class RTBS_Weapon {
   Window_Base.prototype.update = function() {
     update.call(this);
 
-    if (!(SceneManager._scene instanceof Scene_Menu || SceneManager._scene instanceof Scene_Title)) { // not in a menu (including main menu)
+    if (!(Jomy.Core.utils.isInMenu())) { // not in a menu (including main menu)
       // Add weapon
       let equippedWeapon = $gameActors.actor(1).equips()[0];
       if (equippedWeapon == null) {
