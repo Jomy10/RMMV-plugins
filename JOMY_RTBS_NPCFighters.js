@@ -114,6 +114,8 @@ class RTBS_Battler {
       $rtbs_manager.removeBattler(this.id);
       // Clear event's pathfinding
       this._event.clearTarget();
+
+      console.log("dead!!");
       return true;
     } else {
       return false;

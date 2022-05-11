@@ -122,31 +122,38 @@ Jomy.RTBS_PathFind.version = 2.0;
       for (let enemy of $rtbs_manager.enemies) {
         if (enemy.pathfindRadius == null) continue;
         if (Imported.JOMY_RTBS_NPCFighters) {
-          // Get first close battler or player
-          // TODO: check target enemy is targetting currently first!!
-          if (Math.round(Math.random()) == 0) {
-            let isPathfinding = enemy.pathfindToPlayerIfInSight();
-            if (!isPathfinding && Jomy.Core.utils.isIterable($rtbs_manager.battlers)) {
-              for (let target of $rtbs_manager.battlers) {
-                if (enemy.pathfindToEventIfInSight(target._event)) {
-                  enemy.pathfindBattler = target;
-                  break;
+          console.log("->", enemy.pathfindTarget);
+          if (enemy.pathfindTarget == null) {
+            // Get first close battler or player
+            // TODO: check target enemy is targetting currently first!!
+            if (Math.round(Math.random()) == 0) {
+              let isPathfinding = enemy.pathfindToPlayerIfInSight();
+              if (!isPathfinding && Jomy.Core.utils.isIterable($rtbs_manager.battlers)) {
+                for (let target of $rtbs_manager.battlers) {
+                  if (enemy.pathfindToEventIfInSight(target._event)) {
+                    enemy.pathfindBattler = target;
+                    break;
+                  }
                 }
               }
+            } else {
+              let isPathfinding = false;
+              if (Jomy.Core.utils.isIterable($rtbs_manager.battlers)) {
+                for (let target of $rtbs_manager.battlers) {
+                  if (enemy.pathfindToEventIfInSight(target._event)) {
+                    enemy.pathfindBattler = target;
+                    isPathfinding = true;
+                    break;
+                  }
+                }
+              }
+              if (!isPathfinding)
+                enemy.pathfindToPlayerIfInSight();
             }
           } else {
-            let isPathfinding = false;
-            if (Jomy.Core.utils.isIterable($rtbs_manager.battlers)) {
-              for (let target of $rtbs_manager.battlers) {
-                if (enemy.pathfindToEventIfInSight(target._event)) {
-                  enemy.pathfindBattler = target;
-                  isPathfinding = true;
-                  break;
-                }
-              }
+            if (enemy.pathfindTargetIsPlayer) {
+              enemy.pathfindToPlayerIfInSight()
             }
-            if (!isPathfinding)
-              enemy.pathfindToPlayerIfInSight();
           }
         } else {
           // Only check player
