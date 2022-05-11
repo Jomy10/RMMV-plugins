@@ -34,6 +34,7 @@ class RTBS_Battler {
 
     this.atk = 0;
     this.hp = 10;
+    this.maxHp = 10;
     this.speed = 1000;
 
     let eventScript = event.event().pages[0].list;
@@ -52,6 +53,7 @@ class RTBS_Battler {
             break;
           case "Health":
             this.hp = Number(comment.getValue());
+            this.maxHp = Number(comment.getValue());
             break;
           case "Speed":
             this.speed = Number(comment.getValue());
@@ -79,6 +81,14 @@ class RTBS_Battler {
   } // end constructor
 
   _onDefaultCommentKey(comment) {}
+
+  getHp() {
+    return this.hp;
+  }
+
+  maxHp() {
+    return this.maxHp;
+  }
 
   /** @param target {RTBS_Enemy} - an RTBS_Enemy */
   attackTarget(target, attackTime) {

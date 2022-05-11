@@ -38,6 +38,8 @@ Jomy.RTBS_PathFind.version = 2.0;
   let onDefaultEnemyCommentKey = RTBS_Manager.prototype._onDefaultEnemyCommentKey;
   RTBS_Manager.prototype._onDefaultEnemyCommentKey = function(comment, enemy) {
     onDefaultEnemyCommentKey.call(this);
+
+    if (comment == null) return;
     switch (comment.getKey()) {
       case "PathfindRadius":
         enemy.pathfindRadius = Number(comment.getValue());

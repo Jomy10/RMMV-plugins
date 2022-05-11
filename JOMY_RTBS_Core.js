@@ -35,10 +35,64 @@ var Jomy = Jomy || {};
 Jomy.RTBS_Core = {version: 1.0};
 
 class RTBS_Enemy {
-  constructor(id, event) {
-    this.id = id;
-    this.event = event;
+  constructor(_event) {
+    this.id = Jomy.Core.utils.genUUID();
+    this.event = _event;
     this.lastAttack = 0;
+
+    if (_event._pageIndex != 0) return;
+
+    let event = _event.event();
+    let eventScript = event.pages[0].list;
+
+    this.attack = 0;
+    this.health = 0;
+    this.maxHp = 0;
+    this.speed = 1000;
+    this.hpBarShown = false;
+
+    // Get comments
+    for (let line of eventScript) {
+      if (line.code != 108) { continue; }
+      for (let param of line.parameters) {
+        let comment = Jomy.Core.utils.parseComment(param);
+        if (comment == null) continue;
+
+        switch (comment.getKey()) {
+          case "Attack":
+            this.attack = Number(comment.getValue());
+            break;
+          case "Health":
+            this.health = Number(comment.getValue());
+            this.maxHp = Number(comment.getValue());
+            break;
+          case "Speed":
+            this.speed = Number(comment.getValue());
+            break;
+          // HP Bar plugin compatibility
+          case "HPBar":
+            this.hpBarShown = comment.getValue().toLowerCase() == "shown";
+            this.event.displayHPBar(this);
+            break;
+          default:
+            $rtbs_manager._onDefaultEnemyCommentKey(comment, this);
+        }
+      }
+    }
+
+    // Add an identifier to the event that matches the enemy's uuid
+    eventScript.push(
+      {code: 108, ident: 0, parameters: [`rtbs_enemy_id: ${this.id}`]}
+    )
+    $rtbs_manager.addEnemy(this);
+  }
+
+  getHp() {
+    return this.health;
+  }
+
+  maxHp() {
+    return this.maxHp;
   }
 
   /** Called when enemy attacks a player */
@@ -69,6 +123,8 @@ class RTBS_Enemy {
    * @return {boolean} - True if the enemy is dead
    */
   getsAttacked(damage) {
+    if (this.dead) return true;
+
     this.health -= damage;
     console.log("Enemy HP:", this.health);
     if (this.health <= 0) {
@@ -77,6 +133,13 @@ class RTBS_Enemy {
       // Clear event's pathfinding
       if (Imported.Jomy_RTBS_enemyPathfind)
         this.event.clearTarget();
+
+      // Remove hp bar
+      this.hpBarShown = false;
+      this.event.removeHPBar();
+
+      this.dead = true;
+
       return true;
     } else {
       return false;
@@ -167,51 +230,7 @@ class RTBS_Manager {
   // TODO: move to constructor of RTBS_Enemy
   /** Parse enemy event */
   getEnemy(_event) {
-    if (_event._pageIndex != 0) return;
-
-    let event = _event.event();
-    let eventScript = event.pages[0].list;
-
-    let attack = 0;
-    let health = 0;
-    let speed = 1000;
-    const id = Jomy.Core.utils.genUUID();
-
-    let enemy = new RTBS_Enemy(id, _event);
-
-    // Get comments
-    for (let line of eventScript) {
-      if (line.code != 108) { continue; }
-      for (let param of line.parameters) {
-        let comment = Jomy.Core.utils.parseComment(param);
-        if (comment == null) continue;
-        
-        switch (comment.getKey()) {
-          case "Attack":
-            attack = Number(comment.getValue());
-            break;
-          case "Health":
-            health = Number(comment.getValue());
-            break;
-          case "Speed":
-            speed = Number(comment.getValue());
-            break;
-          default:
-            this._onDefaultEnemyCommentKey(comment, enemy);
-        }
-      }
-    }
-
-    enemy.attack = attack;
-    enemy.health = health;
-    enemy.speed = speed;
-
-    // Add an identifier to the event that matches the enemy's uuid
-    console.log("Adding enemy", enemy);
-    eventScript.push(
-      {code: 108, ident: 0, parameters: [`rtbs_enemy_id: ${id}`]}
-    )
-    $rtbs_manager.addEnemy(enemy);
+    new RTBS_Enemy(_event);
   }
 
   /** Meant to be override */
@@ -281,7 +300,6 @@ Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
     for (let _event of events) {
       let event = _event.event();
       // Handle enemy events
-      console.log(event.meta);
       for (let eventHandle of Jomy.RTBS_Core.RTBS_EventsHandle) {
         if (event.meta[eventHandle[0]])
           eventHandle[1](_event);

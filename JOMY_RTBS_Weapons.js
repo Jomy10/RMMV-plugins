@@ -127,7 +127,6 @@ class RTBS_Weapon {
       } else if ($rtbs_player.rtbs.equippedWeapon == null || equippedWeapon.id != $rtbs_player.rtbs.equippedWeapon.id) {
         let weapon = new RTBS_Weapon(equippedWeapon);
         weapon.equip();
-        console.log("equipped", $rtbs_player.rtbs.equippedWeapon);
       }
 
       // Add ranged weapon
@@ -137,7 +136,6 @@ class RTBS_Weapon {
       } else if ($rtbs_player.rtbs.equippedRangedWeapon == null || equippedRangedWeapon.id != $rtbs_player.rtbs.equippedRangedWeapon.id) {
         let rangedWeapon = new RTBS_Weapon(equippedRangedWeapon, true);
         rangedWeapon.equip();
-        console.log("equipped", $rtbs_player.rtbs.equippedRangedWeapon);
       }
     } // endif
   }

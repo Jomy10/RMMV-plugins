@@ -26,16 +26,25 @@ Jomy.Renderer = new class {
   *                  e.g. "img/battle/bullet.png"
   * @param position: { x: number, y: number }
   */
-  renderSprite(id, location, position) {
+  renderSprite(id, location, position, callback) {
     let bitmap = ImageManager.loadBitmap("", location);
-    let sprite = new Sprite(bitmap);
-    this.loadedSprites.set(id, sprite);
+    bitmap.addLoadListener(function() {
+      let sprite = new Sprite(bitmap);
+      // sprite.setFrame(0, 0, sprite.bitmap.width, sprite.bitmap.height);
+      this.loadedSprites.set(id, sprite);
 
-    SceneManager._scene.addChild(sprite);
+      SceneManager._scene.addChild(sprite);
 
-    if (position != null) {
-      this.moveAbsSprite(id, position.x, position.y)
-    }
+      if (position != null) {
+       this.moveAbsSprite(id, position.x, position.y)
+      }
+
+      callback();
+    }.bind(this));
+  }
+
+  getSprite(id) {
+    return this.loadedSprites.get(id);
   }
 
   /** Remove a sprite from the index and the screen */
@@ -53,8 +62,25 @@ Jomy.Renderer = new class {
 
   /** Move a sprite to an position relative to itself */
   moveRelSprite(id, x, y) {
-    let selectedSprite = this.loadedSprites.get(1);
+    let selectedSprite = this.loadedSprites.get(id);
     selectedSprite.move(selectedSprite.x + x, selectedSprite.y + y);
+  }
+
+  setSpriteFrame(id, x, y, w, h) {
+    this.loadedSprites.get(id).setFrame(x, y, w, h);
+  }
+
+  /** Get the sprite dimensions of a sprite
+   * @returns { w: number, h: number } - the sprite's bitmap dimensions
+   */
+  getSpriteDimension(id) {
+    let selSpr = this.loadedSprites.get(id);
+    return { w: selSpr.bitmap.width, h: selSpr.bitmap.height };
+  }
+
+  /** Checks if a sprite with a certain id exists */
+  spriteExists(id) {
+    return this.loadedSprites.get(id) != null;
   }
 
   /** Clear all sprites from the screen and the index */
