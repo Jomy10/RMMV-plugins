@@ -51,7 +51,7 @@ class __BulletManager {
       for (let enemy of $rtbs_manager.enemies) {
         if (enemy.isPointInRadius(alertPosition.x, alertPosition.y, enemy.pathfindRadius * 1.75)) {
           let timer = window.setTimeout(() => {
-            enemy.pathfindTo(alertPosition);
+            enemy.pathfindToPlayer();
           }, timeout);
         }
       }

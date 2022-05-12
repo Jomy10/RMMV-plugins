@@ -55,6 +55,7 @@ Jomy.RTBS_PathFind.version = 2.0;
    * @Deprecated
    */
   RTBS_Enemy.prototype.pathfindTo = function(other) {
+    console.log("pathfinding to ", other);
     this.pathfindTargetIsPlayer = false;
     if (typeof other == "number") {
       if (other == -1) {

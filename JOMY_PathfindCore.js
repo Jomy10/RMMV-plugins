@@ -4,7 +4,7 @@
 * <be.jonaseveraert.mv.pathfindCore>
 *
 * @param Blocking Tile Tag
-* @desc every grid tile taggd with this region tag will block an enemy's view
+* @desc every grid tile tagged with this region tag will block an enemy's view
 * @type number
 * @default 13
 *

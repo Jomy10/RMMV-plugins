@@ -68,6 +68,7 @@ class RTBS_Weapon {
     this.ranged_sprite = "RTBS_Combat/bullet";
     this.ranged_ammoId = null;
     this.ranged_cooldown = 0;
+    this._ranged_lastShot = 0;
     this.durabilityEnabled = false;
     this._weapon.durability = 999;
     this._weapon.mDurability = 999;
@@ -84,6 +85,8 @@ class RTBS_Weapon {
         default:
           if (note == "") continue;
           let comment = Jomy.Core.utils.parseComment(note.trim());
+          if (comment == null) continue;
+          console.log(comment);
 
           switch (comment.getKey()) {
             case "RTBS-ranged-alerts": // TODO: a ranged alert multiplier
@@ -155,6 +158,9 @@ class RTBS_Weapon {
 
   /** Uses 1 ammo for this weapon and returns wheter it was successful */
   canUseRanged() {
+    let now = performance.now();
+    if (this._ranged_lastShot + this.ranged_cooldown > now) return false;
+    this._ranged_lastShot = now
     if (this.ranged_ammoId == null) true;
     let itemCount = $gameParty._items[this.ranged_ammoId];
 

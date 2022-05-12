@@ -374,10 +374,12 @@ Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
         if (enemy.pathfindTargetIsPlayer) {
           if ($gamePlayer.x == positionCheck.x && $gamePlayer.y == positionCheck.y) {
             if ((enemy.lastAttack + enemy.speed) <= elapsedSeconds) {
-              let rand = Math.round(Math.random() * 350 - enemy._attackAttempts);
-              enemy._attackAttempts += 1;
-              console.log("at", enemy._attackAttempts, "rand", rand);
-              if (rand < 50) {
+              let rand = 0;
+              if (enemy._attackAttempts < 350) {
+                rand = Math.round(Math.random() * 350 - enemy._attackAttempts);
+                enemy._attackAttempts += 1;
+              }
+              if (enemy._attackAttempts > 75 && rand < 50) {
                 enemy.attackTarget($rtbs_player, elapsedSeconds);
                 enemy._attackAttempts = 350;
               }
