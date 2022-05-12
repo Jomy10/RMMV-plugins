@@ -96,7 +96,12 @@ class __BulletManager {
 
   _damageToEnemy(bullet) {
     for (let enemy of $rtbs_manager.enemies) {
-      if (Math.round(bullet.x) == enemy.event.screenX() && Math.round(bullet.y) == enemy.event.screenY()) {
+      let x = Math.round(bullet.x);
+      let y = Math.round(bullet.y);
+      let eX = enemy.event.screenX();
+      let eY = enemy.event.screenY();
+      if (eX >= x - 31 && eX <= x + 31
+       && eY >= y - 32 && eY <= y + 31) {
         enemy.getsAttacked(bullet.damage);
 
         AudioManager.playSe({name: this.hitSound, pan: 0, pitch: 100, volume: 100});

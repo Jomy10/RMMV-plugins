@@ -5,9 +5,9 @@
 *
 * @help
 * Move any event marked with <player-follower> in the event's note section to
-* the player.
+* the player and check the 'through' box of the event.
 *
-* The plugin only checks when a scene is loadd wether there are any events with
+* The plugin only checks when a scene is loaded wether there are any events with
 * the tag. To make the plugin check for new events, call the following in a
 * script call:
 * JOMY_UpdatePlayerFollowerEvents();

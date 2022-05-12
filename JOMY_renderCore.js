@@ -60,7 +60,7 @@ Jomy.Renderer = new class {
    * @param text {string} - the string to display
    * @param position {x: number, y: number} - the position of the text
    * @param fill {[]string or string}
-   * @param strok {[]string or string}
+   * @param stroke {[]string or string}
    * @param fontSize {number}
    * @param strokeThickness {number}
    * @param wordWrap {boolean} - wheter to wrap words or not

@@ -34,7 +34,10 @@ class _Companion {
 
     // RTBS-battler integration
     this.isBattler = (event.event().meta["RTBS-battler"]) || false;
-    this.battler = $rtbs_manager.findBattlerWithUUID(event.rtbs_battler_id);
+    this.battler = null;
+    if (this.isBattler) {
+      this.battler = $rtbs_manager.findBattlerWithUUID(event.rtbs_battler_id);;
+    }
     if (this.isBattler && this.battler == null) {
       console.error("Couldn't find battler");
     }

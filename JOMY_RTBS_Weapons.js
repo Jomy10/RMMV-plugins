@@ -28,6 +28,7 @@
 *   which is located in "img/RTBS_Combat/bullet.png"
 * - `RTBS-ranged-ammo: <value>`: The item id of the ammo that should be used for
 *   the ranged weapon.
+* - `RTBS-ranged-cooldown: <value>`: The cooldown of the ranged weapon
 * - `RTBS-durability: <value>`: Add a durability to non-ranged weapons
 * - `RTBS-speed: <value>`: Attack speed of the weapon
 *
@@ -112,7 +113,7 @@ class RTBS_Weapon {
             case "RTBS-speed":
               this.atkSpeed = Number(comment.getValue());
               break;
-            case "RTBS-cooldown":
+            case "RTBS-ranged-cooldown":
               this.ranged_cooldown = Number(comment.getValue());
               break;
           } // end switch comment
