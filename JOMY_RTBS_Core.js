@@ -4,13 +4,18 @@
 * <be.jonaseveraert.mv.RTBS>
 *
 * @param Attack button
-* @type text
+* @type Text
 * @default e
 *
 * @param HPBar shown default
 * @desc Show hp bar by default. Only works when JOMY_RTBS_HealthBar is insalled
-* @type boolean
+* @type Boolean
 * @default false
+*
+* @param Player atk
+* @desc The player's starting attack
+* @type Number
+* @default 5
 *
 * @help
 * = Setup =
@@ -44,6 +49,8 @@ class RTBS_Enemy {
     this.id = Jomy.Core.utils.genUUID();
     this.event = _event;
     this.lastAttack = 0;
+
+    this._attackAttempts = 0;
 
     if (_event._pageIndex != 0) return;
 
@@ -200,7 +207,7 @@ class RTBS_Manager {
   playerAttacks() {
     // TODO: check equipped weapon
     let time = performance.now();
-    if ($rtbs_player.rtbs.lastAttack + $rtbs_player.rtbs.speed > time) { return; } // Player can't attack
+    if ($rtbs_player.rtbs.lastAttack + $rtbs_player.rtbs.speed() > time) { return; } // Player can't attack
 
     $rtbs_player.rtbs.lastAttack = time;
 
@@ -285,6 +292,9 @@ Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
   // RTBS_Events: enemies
   Jomy.RTBS_Core.RTBS_EventsHandle.set("RTBS-enemy", function(event) { $rtbs_manager.getEnemy(event); });
 
+  let playerAtk = Number(plugin.parameters["Player atk"]);
+  console.log("atk:", playerAtk);
+
   // On map load
   let map = Scene_Map.prototype.onMapLoaded;
   Scene_Map.prototype.onMapLoaded = function() {
@@ -294,15 +304,29 @@ Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
     $rtbs_player = $gameParty.members()[0];
     $rtbs_player.rtbs = {
       lastAttack: 0,
-      speed: 1000,
+      speed: function() {
+        if ($rtbs_player.rtbs.equippedWeapon == null)
+          return 1000;
+        else
+          return $rtbs_player.rtbs.equippedWeapon.atkSpeed;
+      },
       equippedWeapon: null,
+      /** This will also decresease the equipped weapon's durability */
       atk: function() {
         // Default behaviour: no cumulative attack
         if ($rtbs_player.rtbs.equippedWeapon == null)
-          return $rtbs_player.atk;
+          return playerAtk + $rtbs_player.rtbs.addAtk;
         else
           return $rtbs_player.rtbs.equippedWeapon.use();
-      }
+      },
+      getAtk: function() {
+        if ($rtbs_player.rtbs.equippedWeapon == null)
+          return playerAtk + $rtbs_player.rtbs.addAtk;
+        else
+          return $rtbs_player.rtbs.equippedWeapon.atk;
+      },
+      /** Additional attack (powerups, etc) */
+      addAtk: 0
     };
 
     // Get all events
@@ -348,8 +372,18 @@ Jomy.RTBS_Core.RTBS_EventsHandle = new Map();
         }
 
         if (enemy.pathfindTargetIsPlayer) {
-          if ($gamePlayer.x == positionCheck.x && $gamePlayer.y == positionCheck.y && ((enemy.lastAttack + enemy.speed) <= elapsedSeconds)) {
-            enemy.attackTarget($rtbs_player, elapsedSeconds);
+          if ($gamePlayer.x == positionCheck.x && $gamePlayer.y == positionCheck.y) {
+            if ((enemy.lastAttack + enemy.speed) <= elapsedSeconds) {
+              let rand = Math.round(Math.random() * 350 - enemy._attackAttempts);
+              enemy._attackAttempts += 1;
+              console.log("at", enemy._attackAttempts, "rand", rand);
+              if (rand < 50) {
+                enemy.attackTarget($rtbs_player, elapsedSeconds);
+                enemy._attackAttempts = 350;
+              }
+            }
+          } else {
+            enemy._attackAttempts = 0;
           }
         } else {
           let battler = enemy.pathfindBattler;

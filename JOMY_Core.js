@@ -4,6 +4,11 @@
 * Core engine plugin for all of Jomy's plugins
 * This plugin contains common code shared among other plugins
 * Put this plugin on top of all the other plugins
+* <be.jonaseveraert.mv.Core>
+*
+* @param Always Dash Disabled
+* @type Boolean
+* @default false
 */
 
 var Imported = Imported || {};
@@ -60,4 +65,18 @@ Jomy.Core.utils.rmmvDirToGameDir = function(rmmvDir) {
 
 Jomy.Core.utils.isInMenu = function() {
   return SceneManager._scene instanceof Scene_Title ||SceneManager._scene instanceof Scene_MenuBase;
-}
+};
+
+(function() {
+  let plugin = $plugins.filter(function(p) {
+      return p.description.contains('<be.jonaseveraert.mv.Core>') && p.status
+  })[0];
+
+  let alwaysDashDisable = Boolean(plugin.parameters["Always Dash Disabled"]);
+
+  if (alwaysDashDisable) {
+    Window_Options.prototype.addGeneralOptions = function() {
+    this.addCommand(TextManager.commandRemember, 'commandRemember');
+};
+  }
+})();

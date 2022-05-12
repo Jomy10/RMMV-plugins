@@ -72,23 +72,15 @@
 
       let row = Math.floor(idx / 16);
 
-      console.log(row, col);
-
       Jomy.Renderer.setSpriteFrame(meleeId, col * iconSize, row * iconSize, iconSize, iconSize);
     }
-
-    console.log("equipping", meleeId);
     spriteIds[5] = meleeId;
-
-    console.log(spriteIds);
   }
 
   function rmHudEquippedWeapon() {
     if (spriteIds[5] == null) return;
-    console.log("removing", spriteIds);
     Jomy.Renderer.removeSprite(spriteIds[5]);
     spriteIds[5] = null;
-    console.log(">", spriteIds);
   }
 
   function addHudEquippedRanged() {
@@ -107,8 +99,6 @@
       }
 
       let row = Math.floor(idx / 16);
-
-      console.log(row, col);
 
       Jomy.Renderer.setSpriteFrame(meleeId, col * iconSize, row * iconSize, iconSize, iconSize);
     }

@@ -29,6 +29,7 @@
 * - `RTBS-ranged-ammo: <value>`: The item id of the ammo that should be used for
 *   the ranged weapon.
 * - `RTBS-durability: <value>`: Add a durability to non-ranged weapons
+* - `RTBS-speed: <value>`: Attack speed of the weapon
 *
 * The attack animation is the selected attack animation, + the 3 attack animations
 * that follow (one for each direction the player is facing in).
@@ -66,9 +67,11 @@ class RTBS_Weapon {
     this.ranged_speed = 1;
     this.ranged_sprite = "RTBS_Combat/bullet";
     this.ranged_ammoId = null;
+    this.ranged_cooldown = 0;
     this.durabilityEnabled = false;
     this._weapon.durability = 999;
     this._weapon.mDurability = 999;
+    this.atkSpeed = 1000;
     this._parseWeaponNotes();
   }
 
@@ -102,6 +105,12 @@ class RTBS_Weapon {
               break;
             case "RTBS-ranged-ammo":
               this.ranged_ammoId = Number(comment.getValue());
+              break;
+            case "RTBS-speed":
+              this.atkSpeed = Number(comment.getValue());
+              break;
+            case "RTBS-cooldown":
+              this.ranged_cooldown = Number(comment.getValue());
               break;
           } // end switch comment
       } // end switch note

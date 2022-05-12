@@ -33,7 +33,6 @@ Jomy.Renderer = new class {
       let sprite = new Sprite(bitmap);
       // sprite.setFrame(0, 0, sprite.bitmap.width, sprite.bitmap.height);
       this.loadedSprites.set(id, sprite);
-      console.log("added", id, "to", this.loadedSprites);
 
       SceneManager._scene.addChild(sprite);
 
@@ -50,7 +49,6 @@ Jomy.Renderer = new class {
     let sprite = new Sprite(bitmap);
     // sprite.setFrame(0, 0, sprite.bitmap.width, sprite.bitmap.height);
     this.loadedSprites.set(id, sprite);
-    console.log("added", id, "to", this.loadedSprites);
 
     SceneManager._scene.addChild(sprite);
 
@@ -65,9 +63,7 @@ Jomy.Renderer = new class {
 
   /** Remove a sprite from the index and the screen */
   removeSprite(id) {
-    console.log("removing", id, "from", this.loadedSprites);
     let sprite = this.loadedSprites.get(id);
-    console.log("sprite", sprite);
     this.loadedSprites.delete(id);
 
     SceneManager._scene.removeChild(sprite);
