@@ -116,10 +116,8 @@ class RTBS_Enemy {
     this.lastAttack = attackTime;
     this._onAttackTarget(target);
     if (targetDead && Imported.Jomy_RTBS_enemyPathfind) {
-      console.log(this.pathfindTarget, "is dead");
       this.pathfindBattler = null;
       this.pathfindTarget = null;
-      console.log(this.pathfindTarget, "now");
     }
   }
 

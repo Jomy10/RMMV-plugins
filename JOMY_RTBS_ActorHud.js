@@ -34,15 +34,13 @@
         });
 
         let stamId = Jomy.Core.utils.genUUID();
-        Jomy.Renderer.renderSprite(stamId, "img/RTBS_ActorHud/actor_hud_stam", {x: 20, y: 16}, () => {
-          Jomy.Renderer.moveAbsSprite(stamId, 182, 63);
+        Jomy.Renderer.renderSprite(stamId, "img/RTBS_ActorHud/actor_hud_stam", {x: 182, y: 63}, () => {
+          let fgId = Jomy.Core.utils.genUUID();
+          Jomy.Renderer.renderSprite(fgId, "img/RTBS_ActorHud/actor_hud_fg", {x: 0, y: 0}, () => {});
+
+          spriteIds = [bgId, fgId, faceId, hpId, stamId, null, null];
+          hudShown = true;
         });
-
-        let fgId = Jomy.Core.utils.genUUID();
-        Jomy.Renderer.renderSprite(fgId, "img/RTBS_ActorHud/actor_hud_fg", {x: 0, y: 0}, () => {});
-
-        spriteIds = [bgId, fgId, faceId, hpId, stamId];
-        hudShown = true;
       });
     });
   }
@@ -57,6 +55,73 @@
     Jomy.Renderer.setSpriteFrame(spriteIds[4], 0, 0, dim.w * perc, dim.h);
   }
 
+  function addHudEquippedWeapon() {
+    let weap = $rtbs_player.rtbs.equippedWeapon;
+    if (weap == null) return;
+    let meleeId = Jomy.Core.utils.genUUID();
+    Jomy.Renderer.renderSpriteSync(meleeId, "img/system/iconSet", {x: 209, y: 109});
+
+    if (weap != null) {
+      let idx = weap._weapon.iconIndex;
+      let iconSize = 32;
+
+      let col = idx;
+      while (col > 15) {
+        col -= 16;
+      }
+
+      let row = Math.floor(idx / 16);
+
+      console.log(row, col);
+
+      Jomy.Renderer.setSpriteFrame(meleeId, col * iconSize, row * iconSize, iconSize, iconSize);
+    }
+
+    console.log("equipping", meleeId);
+    spriteIds[5] = meleeId;
+
+    console.log(spriteIds);
+  }
+
+  function rmHudEquippedWeapon() {
+    if (spriteIds[5] == null) return;
+    console.log("removing", spriteIds);
+    Jomy.Renderer.removeSprite(spriteIds[5]);
+    spriteIds[5] = null;
+    console.log(">", spriteIds);
+  }
+
+  function addHudEquippedRanged() {
+    let weap = $rtbs_player.rtbs.equippedRangedWeapon;
+    if (weap == null) return;
+    let meleeId = Jomy.Core.utils.genUUID();
+    Jomy.Renderer.renderSpriteSync(meleeId, "img/system/iconSet", {x: 269, y: 109});
+
+    if (weap != null) {
+      let idx = weap._weapon.iconIndex;
+      let iconSize = 32;
+
+      let col = idx;
+      while (col > 15) {
+        col -= 16;
+      }
+
+      let row = Math.floor(idx / 16);
+
+      console.log(row, col);
+
+      Jomy.Renderer.setSpriteFrame(meleeId, col * iconSize, row * iconSize, iconSize, iconSize);
+    }
+
+    spriteIds[6] = meleeId;
+  }
+
+  function rmHudEquippedRanged() {
+    if (spriteIds[6] == null) return;
+    Jomy.Renderer.removeSprite(spriteIds[6]);
+    spriteIds[6] = null;
+  }
+
   function hideHud() {
     hudShown = false;
     for (let id of spriteIds) {
@@ -64,6 +129,24 @@
     }
     spriteIds = [];
   }
+
+  let onEq = RTBS_Weapon.prototype._onEquip;
+  RTBS_Weapon.prototype._onEquip = function() {
+    onEq();
+    rmHudEquippedWeapon();
+    rmHudEquippedRanged();
+    addHudEquippedWeapon();
+    addHudEquippedRanged();
+  };
+
+  let onUneq = Jomy.RTBS_Weapons.prototype.onUnequip;
+  Jomy.RTBS_Weapons.prototype.onUnequip = function() {
+    onUneq();
+    if ($rtbs_player.rtbs.equippedWeapon == null)
+      rmHudEquippedWeapon();
+    if ($rtbs_player.rtbs.equippedRangedWeapon == null)
+      rmHudEquippedRanged();
+  };
 
   let mapLoaded = Scene_Map.prototype.onMapLoaded;
   Scene_Map.prototype.onMapLoaded = function() {

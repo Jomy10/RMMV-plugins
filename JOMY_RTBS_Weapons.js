@@ -136,6 +136,7 @@ class RTBS_Weapon {
     this._weapon.durability = this._weapon.mDurability;
     let weaponId = $rtbs_player.rtbs.equippedWeapon._weapon.id;
     $gameActors.actor(1).changeEquip(0, $dataWeapons[0]); // unequip
+    _rtbs_weapons_inst.onUnequip();
     $gameParty._weapons[weaponId] -= 1;
     if ($gameParty._weapons[weaponId] <= 0) {
       delete $gameParty._weapons[weaponId];
@@ -167,8 +168,18 @@ class RTBS_Weapon {
     } else {
       $rtbs_player.rtbs.equippedWeapon = this;
     }
+
+    this._onEquip();
   }
+
+  _onEquip() {}
 }
+
+Jomy.RTBS_Weapons = class {
+  onUnequip() {}
+};
+
+let _rtbs_weapons_inst = new Jomy.RTBS_Weapons();
 
 (function() {
   let plugin = $plugins.filter(function(p) {
@@ -192,6 +203,7 @@ class RTBS_Weapon {
       let equippedWeapon = $gameActors.actor(1).equips()[0];
       if (equippedWeapon == null) {
         $rtbs_player.rtbs.equippedWeapon = null; // unequip weapon
+        _rtbs_weapons_inst.onUnequip();
       } else if ($rtbs_player.rtbs.equippedWeapon == null || equippedWeapon.id != $rtbs_player.rtbs.equippedWeapon.id) {
         let weapon = new RTBS_Weapon(equippedWeapon);
         weapon.equip();

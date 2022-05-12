@@ -33,6 +33,7 @@ Jomy.Renderer = new class {
       let sprite = new Sprite(bitmap);
       // sprite.setFrame(0, 0, sprite.bitmap.width, sprite.bitmap.height);
       this.loadedSprites.set(id, sprite);
+      console.log("added", id, "to", this.loadedSprites);
 
       SceneManager._scene.addChild(sprite);
 
@@ -44,13 +45,29 @@ Jomy.Renderer = new class {
     }.bind(this));
   }
 
+  renderSpriteSync(id, location, position) {
+    let bitmap = ImageManager.loadBitmap("", location);
+    let sprite = new Sprite(bitmap);
+    // sprite.setFrame(0, 0, sprite.bitmap.width, sprite.bitmap.height);
+    this.loadedSprites.set(id, sprite);
+    console.log("added", id, "to", this.loadedSprites);
+
+    SceneManager._scene.addChild(sprite);
+
+    if (position != null) {
+     this.moveAbsSprite(id, position.x, position.y)
+    }
+  }
+
   getSprite(id) {
     return this.loadedSprites.get(id);
   }
 
   /** Remove a sprite from the index and the screen */
   removeSprite(id) {
+    console.log("removing", id, "from", this.loadedSprites);
     let sprite = this.loadedSprites.get(id);
+    console.log("sprite", sprite);
     this.loadedSprites.delete(id);
 
     SceneManager._scene.removeChild(sprite);

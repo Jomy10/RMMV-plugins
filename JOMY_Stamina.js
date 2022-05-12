@@ -23,7 +23,7 @@ Jomy.Stamina = {};
 
     let time = performance.now();
 
-    if ($gamePlayer.isDashing()) {
+    if ($gamePlayer.isDashing() && $gamePlayer.isMoving()) {
       if (nextDown < time) {
         nextDown = time + 30;
         nextUp = time + 70;

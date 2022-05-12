@@ -105,17 +105,23 @@ class RTBS_Battler {
   _onAttackTarget(target) {}
 
   getsAttacked(damage) {
+    if (this.dead) return true;
+
     this.hp -= damage;
 
     console.log("Battler HP:", this.hp);
 
     if (this.hp <= 0) {
-      $gameSelfSwitches.setValue([$gameMap.mapId(), this._event.eventId(), 'A', true]);
+      console.log($gameMap.mapId(),  this._event.eventId());
+      $gameSelfSwitches.setValue([$gameMap.mapId(), this._event.eventId(), 'A'], true);
       $rtbs_manager.removeBattler(this.id);
       // Clear event's pathfinding
       this._event.clearTarget();
 
-      console.log("dead!!");
+      this.dead = true;
+
+      this._event.removeHPBar();
+
       return true;
     } else {
       return false;
