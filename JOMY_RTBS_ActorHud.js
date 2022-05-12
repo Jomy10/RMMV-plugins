@@ -14,6 +14,9 @@
 (function() {
   let spriteIds = [];
   let hudShown = false
+  let meleeEquipped = false;
+  let rangedEquipped = false;
+  let currentRangedCount = null;
 
   function showHud() {
     let width = Graphics.boxWidth;
@@ -28,6 +31,7 @@
       Jomy.Renderer.renderSprite(hpId, "img/RTBS_ActorHud/actor_hud_hp", {x: 20, y: 16}, () => {
         Jomy.Renderer.moveAbsSprite(hpId, 182, 37);
 
+
         let faceId = Jomy.Core.utils.genUUID();
         Jomy.Renderer.renderSprite(faceId, "img/faces/PHC_Garth", {x: 20, y: 16}, () => {
           Jomy.Renderer.setSpriteFrame(faceId, 0, 0, 144, 144);
@@ -38,7 +42,7 @@
           let fgId = Jomy.Core.utils.genUUID();
           Jomy.Renderer.renderSprite(fgId, "img/RTBS_ActorHud/actor_hud_fg", {x: 0, y: 0}, () => {});
 
-          spriteIds = [bgId, fgId, faceId, hpId, stamId, null, null];
+          spriteIds = [bgId, fgId, faceId, hpId, stamId, null, null, null, null];
           hudShown = true;
         });
       });
@@ -55,11 +59,47 @@
     Jomy.Renderer.setSpriteFrame(spriteIds[4], 0, 0, dim.w * perc, dim.h);
   }
 
+  function setHudDurability(perc) {
+    let dim = Jomy.Renderer.getSpriteDimension(spriteIds[7]);
+    Jomy.Renderer.setSpriteFrame(spriteIds[7], 0, 0, dim.w * perc, dim.h);
+  }
+
+  function setHudAmmoCount(count) {
+    currentRangedCount = count;
+    if (spriteIds[8] == null) return;
+    Jomy.Renderer.removeSprite(spriteIds[8]);
+    console.log("Disposing of previous sprite");
+
+    let weap = $rtbs_player.rtbs.equippedRangedWeapon;
+    if (weap == null) return;
+
+    // add ammo count
+    _renderAmmoCount(weap);
+  }
+
+  function _renderAmmoCount(weapon, count) {
+    let acId = Jomy.Core.utils.genUUID();
+    let ammoId = weapon.ranged_ammoId;
+    let ammoCount = 0
+
+    if (ammoId == null)
+      ammoCount = "∞";
+    else
+      ammoCount = $gameParty._items[ammoId] || 0;
+
+    currentRangedCount = ammoCount;
+    console.log("rendering ammo count, current count = ", currentRangedCount);
+
+    Jomy.Renderer.renderText(acId, "x" + String(ammoCount), {x: 313, y: 128});
+
+    spriteIds[8] = acId;
+  }
+
   function addHudEquippedWeapon() {
     let weap = $rtbs_player.rtbs.equippedWeapon;
     if (weap == null) return;
     let meleeId = Jomy.Core.utils.genUUID();
-    Jomy.Renderer.renderSpriteSync(meleeId, "img/system/iconSet", {x: 209, y: 109});
+    Jomy.Renderer.renderSpriteSync(meleeId, "img/system/iconSet", {x: 188, y: 109});
 
     if (weap != null) {
       let idx = weap._weapon.iconIndex;
@@ -75,41 +115,62 @@
       Jomy.Renderer.setSpriteFrame(meleeId, col * iconSize, row * iconSize, iconSize, iconSize);
     }
     spriteIds[5] = meleeId;
+    meleeEquipped = true;
+
+    let durId = null;
+    if (weap.durabilityEnabled) {
+      durId = Jomy.Core.utils.genUUID();
+      Jomy.Renderer.renderSpriteSync(durId, "img/RTBS_ActorHud/actor_hud_durability", {x: 182, y: 151});
+    }
+
+    spriteIds[7] = durId;
   }
 
   function rmHudEquippedWeapon() {
     if (spriteIds[5] == null) return;
     Jomy.Renderer.removeSprite(spriteIds[5]);
     spriteIds[5] = null;
+    if (spriteIds[7] != null) {
+      Jomy.Renderer.removeSprite(spriteIds[7]);
+      spriteIds[7] = null;
+    }
+    meleeEquipped = false;
   }
 
   function addHudEquippedRanged() {
     let weap = $rtbs_player.rtbs.equippedRangedWeapon;
     if (weap == null) return;
     let meleeId = Jomy.Core.utils.genUUID();
-    Jomy.Renderer.renderSpriteSync(meleeId, "img/system/iconSet", {x: 269, y: 109});
+    Jomy.Renderer.renderSpriteSync(meleeId, "img/system/iconSet", {x: 248, y: 109}); // TODO: render bitmap separately! (reuse)
 
-    if (weap != null) {
-      let idx = weap._weapon.iconIndex;
-      let iconSize = 32;
+    let idx = weap._weapon.iconIndex;
+    let iconSize = 32;
 
-      let col = idx;
-      while (col > 15) {
-        col -= 16;
-      }
-
-      let row = Math.floor(idx / 16);
-
-      Jomy.Renderer.setSpriteFrame(meleeId, col * iconSize, row * iconSize, iconSize, iconSize);
+    let col = idx;
+    while (col > 15) {
+      col -= 16;
     }
 
+    let row = Math.floor(idx / 16);
+
+    Jomy.Renderer.setSpriteFrame(meleeId, col * iconSize, row * iconSize, iconSize, iconSize);
+
     spriteIds[6] = meleeId;
+    rangedEquipped = true;
+
+    // add ammo count
+    _renderAmmoCount(weap);
   }
 
   function rmHudEquippedRanged() {
     if (spriteIds[6] == null) return;
     Jomy.Renderer.removeSprite(spriteIds[6]);
     spriteIds[6] = null;
+    rangedEquipped = false;
+
+    // rm ammo count
+    Jomy.Renderer.removeSprite(spriteIds[8]);
+    spriteIds[8] = null;
   }
 
   function hideHud() {
@@ -166,6 +227,21 @@
         let percStamLeft = stam / 100;
         if (percStamLeft != 1) {
           setHudStam(percStamLeft);
+        }
+
+        // TODO: if currentRangedCount != ammo left for player, update ammo count (clear bitmap & draw text)
+        let weapon = $rtbs_player.rtbs.equippedWeapon
+        if (weapon != null && weapon.durabilityEnabled) {
+          let percDurLeft = weapon._weapon.durability / weapon._weapon.mDurability;
+          setHudDurability(percDurLeft);
+        }
+
+        let rangedW = $rtbs_player.rtbs.equippedRangedWeapon;
+        if (rangedW != null) {
+          let ammoCount = $gameParty._items[rangedW.ranged_ammoId] || 0;
+          if (currentRangedCount != ammoCount) {
+            setHudAmmoCount(ammoCount);
+          }
         }
       }
   };

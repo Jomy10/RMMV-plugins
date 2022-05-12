@@ -31,13 +31,12 @@ Jomy.Renderer = new class {
     let bitmap = ImageManager.loadBitmap("", location);
     bitmap.addLoadListener(function() {
       let sprite = new Sprite(bitmap);
-      // sprite.setFrame(0, 0, sprite.bitmap.width, sprite.bitmap.height);
       this.loadedSprites.set(id, sprite);
 
       SceneManager._scene.addChild(sprite);
 
       if (position != null) {
-       this.moveAbsSprite(id, position.x, position.y)
+       this.moveAbsSprite(id, position.x, position.y);
       }
 
       callback();
@@ -47,14 +46,44 @@ Jomy.Renderer = new class {
   renderSpriteSync(id, location, position) {
     let bitmap = ImageManager.loadBitmap("", location);
     let sprite = new Sprite(bitmap);
-    // sprite.setFrame(0, 0, sprite.bitmap.width, sprite.bitmap.height);
     this.loadedSprites.set(id, sprite);
 
     SceneManager._scene.addChild(sprite);
 
     if (position != null) {
-     this.moveAbsSprite(id, position.x, position.y)
+     this.moveAbsSprite(id, position.x, position.y);
     }
+  }
+
+  /** Render text to the screen
+   * @param id {number} - a unique id to reference this sprite
+   * @param text {string} - the string to display
+   * @param position {x: number, y: number} - the position of the text
+   * @param fill {[]string or string}
+   * @param strok {[]string or string}
+   * @param fontSize {number}
+   * @param strokeThickness {number}
+   * @param wordWrap {boolean} - wheter to wrap words or not
+   * @param wordWrapWidth {number} - the width of the text box to wrap in
+   */
+  renderText(id, text, position, fill = ['#ffffff'], stroke = '#000000', fontSize = 26, strokeThickness = 4, wordWrap = false, wordWrapWidth = 440) {
+    let textStyle = new PIXI.TextStyle({
+      fontFamily: "GameFont",
+      fontSize: 26,
+      fill: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: strokeThickness,
+      wordWrap: wordWrap,
+      wordWrapWidth: wordWrapWidth
+    });
+
+    let txt = new PIXI.Text(text, textStyle);
+    txt.y = position.y;
+    txt.x = position.x;
+
+    this.loadedSprites.set(id, txt);
+
+    SceneManager._scene.addChild(txt);
   }
 
   getSprite(id) {
@@ -63,7 +92,9 @@ Jomy.Renderer = new class {
 
   /** Remove a sprite from the index and the screen */
   removeSprite(id) {
+    console.log("removing", id);
     let sprite = this.loadedSprites.get(id);
+    console.log("sprite", sprite);
     this.loadedSprites.delete(id);
 
     SceneManager._scene.removeChild(sprite);
