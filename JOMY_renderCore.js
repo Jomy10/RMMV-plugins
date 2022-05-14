@@ -59,27 +59,37 @@ Jomy.Renderer = new class {
    * @param id {number} - a unique id to reference this sprite
    * @param text {string} - the string to display
    * @param position {x: number, y: number} - the position of the text
-   * @param fill {[]string or string}
-   * @param stroke {[]string or string}
-   * @param fontSize {number}
-   * @param strokeThickness {number}
-   * @param wordWrap {boolean} - wheter to wrap words or not
-   * @param wordWrapWidth {number} - the width of the text box to wrap in
+   * @param style {object} -
+   *   @param style.font {string}
+   *   @param style.fontSize {number}
+   *   @param style.fill {[]string or string}
+   *   @param style.stroke {[]string or string}
+   *   @param style.fontSize {number}
+   *   @param style.strokeThickness {number}
+   *   @param style.wordWrap {boolean} - wheter to wrap words or not
+   *   @param style.wordWrapWidth {number} - the width of the text box to wrap in
+   *   @param style.opacity {number} - text opacity
    */
-  renderText(id, text, position, fill = ['#ffffff'], stroke = '#000000', fontSize = 26, strokeThickness = 4, wordWrap = false, wordWrapWidth = 440) {
+  renderText(id, text, position, style = {}) {
+    let strokeThickness = 4;
+    if (style.strokeThickness != null)
+      strokeThickness = style.strokeThickness;
+
     let textStyle = new PIXI.TextStyle({
-      fontFamily: "GameFont",
-      fontSize: 26,
-      fill: '#ffffff',
-      stroke: '#000000',
+      fontFamily: style.font || "GameFont",
+      fontSize: style.fontSize || 26,
+      fill: style.fill || ['#ffffff'],
+      stroke: style.stroke || '#000000',
       strokeThickness: strokeThickness,
-      wordWrap: wordWrap,
-      wordWrapWidth: wordWrapWidth
+      wordWrap: style.wordWrap || false,
+      wordWrapWidth: style.wordWrapWidth || 440
     });
 
     let txt = new PIXI.Text(text, textStyle);
     txt.y = position.y;
     txt.x = position.x;
+    if (style.opacity != null)
+      txt.alpha = style.opacity;
 
     this.loadedSprites.set(id, txt);
 
