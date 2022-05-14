@@ -86,8 +86,8 @@ Jomy.Renderer = new class {
     });
 
     let txt = new PIXI.Text(text, textStyle);
-    txt.y = position.y;
     txt.x = position.x;
+    txt.y = position.y;
     if (style.opacity != null)
       txt.alpha = style.opacity;
 
@@ -102,9 +102,7 @@ Jomy.Renderer = new class {
 
   /** Remove a sprite from the index and the screen */
   removeSprite(id) {
-    console.log("removing", id);
     let sprite = this.loadedSprites.get(id);
-    console.log("sprite", sprite);
     this.loadedSprites.delete(id);
 
     SceneManager._scene.removeChild(sprite);

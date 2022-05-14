@@ -10,13 +10,16 @@
 * requires JOMY_renderCore plugin
 *
 * == Plugin command usage ==
-* showText showText x y fadeDuration text
+* showText showText x y fadeDuration fontSize text
 * example: showText 10 10 1000 26 Hello World!
+* to disable fade in: showText 10 10 0 26 Hello World!
 *
 */
 
 (function() {
   let fadeIns = new Map();
+
+  /** plugin command */
   function showText(x, y, fadeDuration, fontSize, text) {
     let startOpacity = 0;
     if (fadeDuration == 0)
@@ -28,8 +31,6 @@
       fontSize: fontSize || 26,
       opacity: startOpacity
     });
-
-
   }
 
   var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
@@ -59,7 +60,6 @@
      let sprite = Jomy.Renderer.getSprite(entry[0]);
      let current = sprite.alpha;
      sprite.alpha = current + 1 / entry[1];
-     console.log(current);
      if (sprite.alpha >= 1) {
        fadeIns.delete(entry[0]);
      }

@@ -68,7 +68,6 @@
     currentRangedCount = count;
     if (spriteIds[8] == null) return;
     Jomy.Renderer.removeSprite(spriteIds[8]);
-    console.log("Disposing of previous sprite");
 
     let weap = $rtbs_player.rtbs.equippedRangedWeapon;
     if (weap == null) return;
@@ -88,7 +87,6 @@
       ammoCount = $gameParty._items[ammoId] || 0;
 
     currentRangedCount = ammoCount;
-    console.log("rendering ammo count, current count = ", currentRangedCount);
 
     Jomy.Renderer.renderText(acId, "x" + String(ammoCount), {x: 313, y: 128});
 
