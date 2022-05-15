@@ -9,6 +9,10 @@
 * - img/RTBS_ActorHud/actor_hud_fg.png
 * - img/RTBS_ActorHud/actor_hud_hp.png
 * - img/RTBS_ActorHud/actor_hud_stam.png
+*
+* == Notes ==
+* Add <RTBS-HUD-hidden> to the note of a map to hide the hud for this
+* particular map.
 */
 
 (function() {
@@ -200,7 +204,9 @@
   let mapLoaded = Scene_Map.prototype.onMapLoaded;
   Scene_Map.prototype.onMapLoaded = function() {
     mapLoaded.call(this);
-    showHud();
+    if (!$dataMap.meta["RTBS-HUD-hidden"]) {
+      showHud();
+    }
   };
 
   let nextUpdate = 0;
