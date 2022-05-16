@@ -153,6 +153,10 @@ class RTBS_Weapon {
     $gameParty._weapons[weaponId] -= 1;
     if ($gameParty._weapons[weaponId] <= 0) {
       delete $gameParty._weapons[weaponId];
+    } else {
+      // Still have more of this kind of weapon; re-equip
+      console.log("re-equipping");
+      $gameActors.actor(1).changeEquip(0, $dataWeapons[weaponId]);
     }
     // TODO: play breaking sound
   }
