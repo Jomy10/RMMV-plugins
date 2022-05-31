@@ -166,7 +166,7 @@ class RTBS_Weapon {
     let now = performance.now();
     if (this._ranged_lastShot + this.ranged_cooldown > now) return false;
     this._ranged_lastShot = now
-    if (this.ranged_ammoId == null) true;
+    if (this.ranged_ammoId == null) return true;
     let itemCount = $gameParty._items[this.ranged_ammoId];
 
     if (itemCount != null && itemCount > 0) {

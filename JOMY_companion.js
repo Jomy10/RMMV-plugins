@@ -65,16 +65,21 @@ class _Companion {
     }
 
     let x, y;
-    if (this._event.x > $gamePlayer.x) {
-      x = $gamePlayer.x + Math.round(Math.random() * 3);
-    } else {
-      x = $gamePlayer.x - Math.round(Math.random() * 3);
-    }
+    while (true) {
+      if (this._event.x > $gamePlayer.x) {
+        x = $gamePlayer.x + Math.round(Math.random() * 3);
+      
+      } else {
+        x = $gamePlayer.x - Math.round(Math.random() * 3);
+      }
 
-    if (this._event.y > $gamePlayer.y) {
-      y = $gamePlayer.y + Math.round(Math.random() * 3);
-    } else {
-      y = $gamePlayer.y - Math.round(Math.random() * 3);
+      if (this._event.y > $gamePlayer.y) {
+        y = $gamePlayer.y + Math.round(Math.random() * 3);
+      } else {
+        y = $gamePlayer.y - Math.round(Math.random() * 3);
+      }
+    
+      if ($gamePlayer.isMapPassable(x, y, 8)) break;
     }
 
     this._event.setTarget(null, x, y);
@@ -96,23 +101,26 @@ class _Companion {
     let playerDir = Jomy.Core.utils.rmmvDirToGameDir($gamePlayer.direction());
 
     let x, y;
-    switch (playerDir) {
-      case 0: // up
-        x = $gamePlayer.x - Math.round(Math.random() * 3);
-        y = $gamePlayer.y + Math.round(Math.random() * 3);
-        break;
-      case 3: // left
-        x = $gamePlayer.x + Math.round(Math.random() * 3);
-        y = $gamePlayer.y + Math.round(Math.random() * 3);
-        break;
-      case 2: // down
-        x = $gamePlayer.x + Math.round(Math.random() * 3);
-        y = $gamePlayer.y - Math.round(Math.random() * 3);
-        break;
-      case 1: // right
-        x = $gamePlayer.x - Math.round(Math.random() * 3);
-        y = $gamePlayer.y - Math.round(Math.random() * 3);
-        break;
+    while (true) {
+      switch (playerDir) {
+        case 0: // up
+          x = $gamePlayer.x - Math.round(Math.random() * 3);
+          y = $gamePlayer.y + Math.round(Math.random() * 3);
+          break;
+        case 3: // left
+          x = $gamePlayer.x + Math.round(Math.random() * 3);
+          y = $gamePlayer.y + Math.round(Math.random() * 3);
+          break;
+        case 2: // down
+          x = $gamePlayer.x + Math.round(Math.random() * 3);
+          y = $gamePlayer.y - Math.round(Math.random() * 3);
+          break;
+        case 1: // right
+          x = $gamePlayer.x - Math.round(Math.random() * 3);
+          y = $gamePlayer.y - Math.round(Math.random() * 3);
+          break;
+      }
+      if ($gamePlayer.isMapPassable(x, y, 8)) break;
     }
 
     this._event.setTarget(null, x, y);
